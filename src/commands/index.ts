@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
 const profile = {
     ...new SlashCommandBuilder()
@@ -22,6 +22,7 @@ const clan = {
     ...new SlashCommandBuilder()
         .setName("clan")
         .setDescription("Get loot numbers of ToD members")
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 }
 
 const COMMANDS = [

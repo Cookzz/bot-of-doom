@@ -5,7 +5,7 @@ import Profiler from './profiler';
 
 class Host {
     private readonly client: Client
-    private readonly commands: Commands
+    private readonly commands: any
     private readonly profiler: Profiler
 
     constructor(client: Client) {

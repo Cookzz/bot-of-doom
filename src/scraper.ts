@@ -88,7 +88,7 @@ class Scraper {
         const textSelector = await page
             .locator(SCRAPE.WEEKLY_LOOT_ONLY)
             .waitHandle();
-        const loot_weekly = await textSelector?.evaluate(el => el.textContent);
+        const loot_weekly = await textSelector?.evaluate((el: any) => el.textContent);
 
         return { loot_weekly }
     }
@@ -97,24 +97,18 @@ class Scraper {
         return await page.$$eval('#DataTables_Table_0 tr', rows => {
             return Array.from(rows, row => {
                 const columns = row.querySelectorAll('td');
-                return Array.from(columns, column => column.innerText);
+                return Array.from(columns, (column: any) => column.innerText);
             }).filter(ary => ary.length !== 0);
         });
     }
 
     private async getMembers(page: Page){
-        const links = await page.evaluate(() => {
-            return Array.from(
-                document.querySelectorAll('#DataTables_Table_0 a[href]'),
-                a => a.getAttribute('href')
-            )
-        });
+        const links = await page.$$eval("#DataTables_Table_0 a[href]", (list) => list.map((elm) => elm.href))
 
         let memberInfos = []
 
         for (const link of links) {
-            const url = `${DFPROFILER.BASE}${link}`
-            await page.goto(url)
+            await page.goto(link)
             const user_info = await this.getBasicInfo(page)
             const loot_info = await this.getMemberWeeklyLoot(page)
 

@@ -19,6 +19,7 @@ class Profiler {
 
     async fetchProfile(int: any, text: any){
         const searchParams = new URLSearchParams()
+        const profileName = text.trim().replace(/ /g,"_")
         searchParams.append("dataType", "json")
         searchParams.append("query", text)
 
@@ -29,7 +30,7 @@ class Profiler {
             }
         }
 
-        const { data, error }: any = await tryCatch(ky.post(`${API.SEARCH_PROFILE}/${text}`, postData).json())
+        const { data, error }: any = await tryCatch(ky.post(`${API.SEARCH_PROFILE}/${profileName}`, postData).json())
 
         if (error){
             int.reply("There is an issue fetching from DFprofiler, please try again later.")
@@ -90,12 +91,14 @@ class Profiler {
             return
         }
         if (!data || !data?.length){
-            int.reply("No profile with this name found.")
+            int.reply("Can't get top clan weekly loot.")
             return
         }
 
         const tableData = new Array(["No.", "Clan", "Record"]).concat(data)
-        const textTable = table(tableData, { singleLine: true })
+        const textTable = table(tableData, { drawHorizontalLine: (lineIndex, rowCount) => {
+          return lineIndex === 0 || lineIndex === 1 || lineIndex === rowCount;
+        } })
         const extraEmbed = "```" + textTable + "```"
 
         const embed = new EmbedBuilder()
@@ -117,13 +120,15 @@ class Profiler {
         return
       }
       if (!data || !data?.length){
-          int.editReply("No profile with this name found.")
+          int.editReply("Can't get any clan loot data")
           return
       }
 
       const additionalData = convertToTableArray(data)
       const tableData = new Array(["Name", "Rank", "Weekly Loot"]).concat(additionalData)
-      const textTable = table(tableData, { singleLine: true })
+      const textTable = table(tableData, { drawHorizontalLine: (lineIndex, rowCount) => {
+        return lineIndex === 0 || lineIndex === 1 || lineIndex === rowCount;
+      } })
       const extraEmbed = "```" + textTable + "```"
 
       const embed = new EmbedBuilder()

@@ -1,4 +1,4 @@
-console.log("Hello via Bun!");import { Client, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
+import { Client, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 
 import COMMANDS from './src/commands'
 import { existsSync } from 'node:fs'
