@@ -1,116 +1,117 @@
-import puppeteer, { Page } from "puppeteer"
+import ky from 'ky'
+import * as cheerio from 'cheerio';
 import { DFPROFILER, SCRAPE } from "./utils/scraper.util";
+import { tryCatch } from "./utils/common.util";
+import { API } from "./utils/api.util";
 
 class Scraper {
     async getProfile(id: any){
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
+        const { data, error } = await tryCatch(ky.get(`${DFPROFILER.PROFILE_VIEW}/${id}`).text())
 
-        // Navigate the page to a URL.
-        await page.goto(`${DFPROFILER.PROFILE_VIEW}/${id}`);
+        if (error){
+            return null
+        }
 
-        // Set screen size.
-        await page.setViewport({width: 1080, height: 1024});
+        const profileElement = data
+        const $ = cheerio.load(profileElement)
 
-        const user_info = await this.getBasicInfo(page)
-        const loot_info = await this.getLootInfo(page)
-
-        await browser.close();
+        const user_info = this.getBasicInfo($)
+        const loot_info = this.getLootInfo($)
 
         const combinedInfo = Object.assign({}, user_info, loot_info)
         return combinedInfo
     }
 
     async getClanWeekly(){
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
+        const { data, error } = await tryCatch(ky.get(DFPROFILER.CLAN_WEEKLY).text())
 
-        // Navigate the page to a URL.
-        await page.goto(DFPROFILER.CLAN_WEEKLY);
+        if (error){
+            return null
+        }
 
-        // Set screen size.
-        await page.setViewport({width: 1080, height: 1024});
+        const weeklyClanElement = data
+        const $ = cheerio.load(weeklyClanElement)
 
-        const result = await this.getWeeklyTable(page)
-
-        await browser.close();
+        const result = this.getWeeklyTable($)
 
         return result
     }
 
     async getClanMemberWeeklyLoot(){
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
+        const { data, error } = await tryCatch(ky.get(DFPROFILER.CLAN).text())
 
-        // Navigate the page to a URL.
-        await page.goto(DFPROFILER.CLAN);
+        if (error){
+            return null
+        }
 
-        // Set screen size.
-        await page.setViewport({width: 1080, height: 1024});
-
-        const result = await this.getMembers(page)
-
-        await browser.close();
+        const clanElement = data
+        const $ = cheerio.load(clanElement)
+        
+        const result = await this.getMembers($)
 
         return result
     }
 
-    private async getBasicInfo(page: Page){
-        const basicInfo = await page.$$eval(SCRAPE.BASIC_INFO, (els: any)=>{
-            return els.map((el: any) => el.textContent)
+    private getBasicInfo($: cheerio.CheerioAPI){
+        return $.extract({ 
+            name: '.profiler-username-header',
+            clan: '.clan',
+            profession_level: 'div[data-bind="text: profession_level"]' 
         })
-
-        const info = {
-            name: basicInfo[0],
-            clan: basicInfo[1],
-            profession_level: basicInfo[2]
-        }
-
-        return info;
     }
 
-    private async getLootInfo(page: Page){
-        const basicInfo = await page.$$eval(SCRAPE.LOOT_INFO, (els: any)=>{
-            return els.map((el: any) => el.textContent)
+    private getLootInfo($: cheerio.CheerioAPI){
+        return $.extract({
+            loot_weekly: 'div[data-bind="text: weekly_loot"]',
+            loot_alltime: 'div[data-bind="text: all_time_loot"]',
+            clan_weekly: 'div[data-bind="text: clan_weekly_loot"]',
+            clan_alltime: 'div[data-bind="text: clan_total_loot"]'
         })
-
-        const info = {
-            loot_weekly: basicInfo[0],
-            loot_alltime: basicInfo[1],
-            clan_weekly: basicInfo[2],
-            clan_alltime: basicInfo[3]
-        }
-
-        return info;
     }
 
-    private async getMemberWeeklyLoot(page: Page){
-        const textSelector = await page
-            .locator(SCRAPE.WEEKLY_LOOT_ONLY)
-            .waitHandle();
-        const loot_weekly = await textSelector?.evaluate((el: any) => el.textContent);
+    private getMemberWeeklyLoot($: cheerio.CheerioAPI){
+        const loot_weekly = $(SCRAPE.WEEKLY_LOOT_ONLY).text()
 
         return { loot_weekly }
     }
 
-    private async getWeeklyTable(page: Page){
-        return await page.$$eval('#DataTables_Table_0 tr', rows => {
-            return Array.from(rows, row => {
-                const columns = row.querySelectorAll('td');
-                return Array.from(columns, (column: any) => column.innerText);
-            }).filter(ary => ary.length !== 0);
+    private getWeeklyTable($: cheerio.CheerioAPI){
+        const rows: any[] = [];
+        const sel = "tbody > tr";
+        $(sel).each(function() {
+            const row = $(this).find('td').map((i, el) => $(el).text().replace(/[\n\r\t]/gm, "")).get();
+            rows.push(row);
         });
+
+        return rows.slice(0, 25)
     }
 
-    private async getMembers(page: Page){
-        const links = await page.$$eval("#DataTables_Table_0 a[href]", (list) => list.map((elm) => elm.href))
+    private async getMembers($: cheerio.CheerioAPI){
+        const links: string[] = []
+        const sel = "tbody tr td";
+        $(sel).each((index, elem) => {
+            const link = $(elem).find('a').attr('href');
+            // Make sure the href attribute exists and is not empty
+            if (link && link.trim() !== '') {
+                links.push(link);
+            }
+        })
 
         let memberInfos = []
 
         for (const link of links) {
-            await page.goto(link)
-            const user_info = await this.getBasicInfo(page)
-            const loot_info = await this.getMemberWeeklyLoot(page)
+            const profileLink = `${API.BASE_URL}${link}`
+            const { data, error } = await tryCatch(ky.get(profileLink).text())
+
+            if (error){
+                return null
+            }
+
+            const profileElement = data
+
+            const $$ = cheerio.load(profileElement)
+            const user_info = this.getBasicInfo($$)
+            const loot_info = this.getMemberWeeklyLoot($$)
 
             const combinedInfo = Object.assign({}, user_info, loot_info)
             memberInfos.push(combinedInfo)

@@ -2,10 +2,10 @@ import { EmbedBuilder, type Client } from "discord.js";
 import ky from 'ky'
 import { table } from 'table'
 
-import { isBlank, tryCatch } from "./utils/common.util";
+import { getDateTime, isBlank, tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
 import Scraper from "./scraper";
-import type { ProfileInfo } from "./types/profile-info.type";
+import type { ProfileInfo } from "./types/profile-info.type.ts";
 import { convertToTableArray } from "./utils/profiler.util";
 
 class Profiler {
@@ -41,9 +41,16 @@ class Profiler {
             return
         }
 
+        const formattedDate = getDateTime()
+
         await int.deferReply()
 
-        const profileInfo: ProfileInfo = await this.scraper.getProfile(data[0].player_id)
+        const profileInfo: ProfileInfo | null = await this.scraper.getProfile(data[0].player_id)
+
+        if (!profileInfo){
+          int.editReply("There is an issue fetching from DFprofiler, please try again later.")
+          return
+        }
 
         const embed = new EmbedBuilder()
             .setTitle("Profile")
@@ -76,7 +83,7 @@ class Profiler {
                   },
             )
             .setColor("#00b0f4")
-            .setTimestamp();
+            .setFooter({ text: `${formattedDate}` })
 
         return await int.editReply({ embeds: [embed] })
     }
@@ -95,6 +102,10 @@ class Profiler {
             return
         }
 
+        console.log("check weekly data", data)
+
+        const formattedDate = getDateTime()
+
         const tableData = new Array(["No.", "Clan", "Record"]).concat(data)
         const textTable = table(tableData, { drawHorizontalLine: (lineIndex, rowCount) => {
           return lineIndex === 0 || lineIndex === 1 || lineIndex === rowCount;
@@ -105,7 +116,7 @@ class Profiler {
             .setTitle("Weekly Clan Top Looter")
             .setDescription(extraEmbed)
             .setColor("#00b0f4")
-            .setTimestamp();
+            .setFooter({ text: `${formattedDate}` })
 
         return await int.editReply({ embeds: [embed] })
     }
@@ -124,6 +135,8 @@ class Profiler {
           return
       }
 
+      const formattedDate = getDateTime()
+
       const additionalData = convertToTableArray(data)
       const tableData = new Array(["Name", "Rank", "Weekly Loot"]).concat(additionalData)
       const textTable = table(tableData, { drawHorizontalLine: (lineIndex, rowCount) => {
@@ -135,7 +148,7 @@ class Profiler {
           .setTitle("Weekly Clan Top Looter")
           .setDescription(extraEmbed)
           .setColor("#00b0f4")
-          .setTimestamp();
+          .setFooter({ text: `${formattedDate}` })
 
       return await int.editReply({ embeds: [embed] })
     }

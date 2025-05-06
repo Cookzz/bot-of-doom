@@ -1,5 +1,4 @@
 import { ChatInputCommandInteraction, Client, type CacheType } from 'discord.js';
-import type { Commands } from './types/command.type';
 import { validateInput } from './utils/host.util';
 import Profiler from './profiler';
 
