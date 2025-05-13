@@ -6,5 +6,6 @@ export enum DFPROFILER {
 }
 
 export enum SCRAPE {
-    WEEKLY_LOOT_ONLY = 'div[data-bind="text: weekly_loot"]'
+    WEEKLY_LOOT_ONLY = 'div[data-bind="text: weekly_loot"]',
+    CLAN_WEEKLY_LOOT_ONLY = 'div[data-bind="text: clan_weekly_loot"]'
 }

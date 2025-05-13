@@ -14,7 +14,11 @@ class Host {
         this.commands = {
             profile: (int: any, text: any) => this.profiler.fetchProfile(int, text),
             weeklyloot: (int: any, text: any) => this.profiler.fetchWeekly(int),
-            clan: (int: any, text: any) => this.profiler.fetchClanLoot(int)
+            clan: (int: any, text: any) => this.profiler.fetchClanLoot(int),
+            compete: (int: any, text: any) => this.profiler.fetchClanWeeklyLoot(int),
+            set: (int: any, text: any) => this.profiler.setProfile(int, text),
+            me: (int: any, text: any) => this.profiler.getSelfProfile(int),
+            who: (int: any, text: any) => this.profiler.getPlayerProfile(int, text)
         }
     }
 

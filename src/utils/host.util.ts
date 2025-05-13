@@ -1,6 +1,8 @@
 export const validateInput = (interaction: any) => {
     let text = interaction.options.getString('text') ?? 
-               interaction.options.getNumber('number') ?? null;
+               interaction.options.getNumber('number') ??
+               interaction.options.getUser('user') ??
+               null;
     let secondaryText = interaction.options.getString('text2') ?? 
                         interaction.options.getNumber('number2') ?? null;
 

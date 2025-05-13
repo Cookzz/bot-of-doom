@@ -18,6 +18,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@seald-io/nedb": "^4.1.1",
     "cheerio": "^1.0.0",
     "discord.js": "^14.19.3",
     "ky": "^1.8.1",

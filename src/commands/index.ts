@@ -25,10 +25,50 @@ const clan = {
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 }
 
+const compete = {
+    ...new SlashCommandBuilder()
+        .setName("compete")
+        .setDescription("Get loot numbers of competing ToD Members (get by clan weekly)")
+}
+
+const setProfile = {
+    ...new SlashCommandBuilder()
+        .setName("set")
+        .setDescription("Set a dfprofiler id account to yourself")
+        .addStringOption(option =>
+            option
+                .setName("text")
+                .setDescription("DFProfiler ID")
+                .setRequired(true)
+        )
+}
+
+const getProfile = {
+    ...new SlashCommandBuilder()
+        .setName("me")
+        .setDescription("Show your dfprofile")
+}
+
+const checkProfile = {
+    ...new SlashCommandBuilder()
+        .setName("who")
+        .setDescription("Show someone's dfprofiler (if any)")
+         .addUserOption(option =>
+            option
+                .setName('user')
+                .setDescription('mention the user')
+                .setRequired(true)
+        ),
+}
+
 const COMMANDS = [
     profile,
     clanWeekly,
-    clan
+    clan,
+    compete,
+    setProfile,
+    getProfile,
+    checkProfile
 ]
 
 export default COMMANDS;
