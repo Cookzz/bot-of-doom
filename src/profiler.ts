@@ -6,7 +6,7 @@ import { getDateTime, isBlank, tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
 import Scraper from "./scraper";
 import type { ProfileInfo } from "./types/profile-info.type.ts";
-import { convertToTableArray } from "./utils/profiler.util";
+import { convertToTableArray, getDfProfilerIdByUrl, isDigits, isValidDfProfilerUrl, isValidProfileInput } from "./utils/profiler.util";
 import { DFPROFILER } from "./utils/scraper.util";
 
 const Datastore = require('@seald-io/nedb')
@@ -192,6 +192,43 @@ class Profiler {
     async setProfile(int: any, text: string){
       // const nickName = int.member.nickname;
       // const userName = int.user.username;
+      if (!isValidProfileInput(text)){
+        return await int.reply("It has to be either dfprofiler url or an id in digits.")
+      }
+
+      if (isValidDfProfilerUrl(text)){
+        return await this.setByUrl(int, text)
+      }
+      if (isDigits(text)){
+        return await this.setById(int, text)
+      }
+
+      return await int.reply("You somehow bypassed all the checks. Need developer to check.")
+    }
+
+    async setByUrl(int: any, text: string){
+      const userId = int.user.id;
+      const { data, error } = await tryCatch(ky.get(text).text())
+
+      if (error){
+        await int.reply("This DFProfiler URL is not valid. Try again.")
+        return
+      }
+
+      const id = getDfProfilerIdByUrl(text)
+
+      const doc = { user_id: userId, profiler_id: id }
+      
+      const insertResponse = await tryCatch(db.updateAsync(doc, { upsert: true }))
+      if (insertResponse.error){
+        console.log("There's a problem inserting into DB")
+        return
+      }
+
+      await int.reply(`Created profile for <@${userId}>`);
+    }
+
+    async setById(int: any, text: string){
       const userId = int.user.id;
       const { data, error } = await tryCatch(ky.get(`${DFPROFILER.PROFILE_VIEW}/${text}`).text())
 
