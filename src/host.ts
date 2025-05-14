@@ -1,10 +1,11 @@
 import { ChatInputCommandInteraction, Client, type CacheType } from 'discord.js';
 import { validateInput } from './utils/host.util';
 import Profiler from './profiler';
+import type { Commands } from './types/command.type';
 
 class Host {
     private readonly client: Client
-    private readonly commands: any
+    private readonly commands: Commands
     private readonly profiler: Profiler
 
     constructor(client: Client) {
