@@ -106,8 +106,6 @@ class Profiler {
             return
         }
 
-        console.log("check weekly data", data)
-
         const formattedDate = getDateTime()
 
         const tableData = new Array(["No.", "Clan", "Record"]).concat(data)
@@ -174,24 +172,22 @@ class Profiler {
       const formattedDate = getDateTime()
 
       const additionalData = convertToTableArray(data)
-      const tableData = new Array(["Name", "Rank", "Clan Weekly Loot"]).concat(additionalData)
+      const tableData = new Array(["Name", "Rank", "Weekly Loot"]).concat(additionalData)
       const textTable = table(tableData, { drawHorizontalLine: (lineIndex, rowCount) => {
         return lineIndex === 0 || lineIndex === 1 || lineIndex === rowCount;
       } })
-      const extraEmbed = "```" + textTable + "```"
+      const extraEmbed = "Only competing looters are counted (clan weekly loots)\n```" + textTable + "```"
 
       const embed = new EmbedBuilder()
-          .setTitle("Weekly Clan Top Looter")
-          .setDescription(extraEmbed)
-          .setColor("#00b0f4")
-          .setFooter({ text: `${formattedDate}` })
+            .setTitle("Weekly Clan Competing Top Looter")
+            .setDescription(extraEmbed)
+            .setColor("#00b0f4")
+            .setFooter({ text: `${formattedDate}` })
 
       return await int.editReply({ embeds: [embed] })
     }
 
     async setProfile(int: any, text: string){
-      // const nickName = int.member.nickname;
-      // const userName = int.user.username;
       if (!isValidProfileInput(text)){
         return await int.reply("It has to be either dfprofiler url or an id in digits.")
       }
