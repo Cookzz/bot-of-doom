@@ -239,7 +239,7 @@ class Profiler {
 
       const doc = { user_id: userId, profiler_id: text }
       
-      const insertResponse = await tryCatch(db.insertAsync(doc))
+      const insertResponse = await tryCatch(db.updateAsync(doc, { upsert: true }))
       if (insertResponse.error){
         console.log("There's a problem inserting into DB")
         return
