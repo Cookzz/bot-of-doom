@@ -215,11 +215,14 @@ class Profiler {
 
       const doc = { user_id: userId, profiler_id: id }
       
-      const insertResponse = await tryCatch(db.updateAsync(doc, { upsert: true }))
+      const insertResponse = await tryCatch(db.updateAsync({ user_id: userId }, doc, { upsert: true }))
       if (insertResponse.error){
         console.log("There's a problem inserting into DB")
         return
       }
+
+      //make sure no duplicate exists during updates
+      await db.compactDatafileAsync()
 
       await int.reply(`Created profile for <@${userId}>`);
     }
@@ -235,11 +238,14 @@ class Profiler {
 
       const doc = { user_id: userId, profiler_id: text }
       
-      const insertResponse = await tryCatch(db.updateAsync(doc, { upsert: true }))
+      const insertResponse = await tryCatch(db.updateAsync({ user_id: userId }, doc, { upsert: true }))
       if (insertResponse.error){
         console.log("There's a problem inserting into DB")
         return
       }
+
+      //make sure no duplicate exists during updates
+      await db.compactDatafileAsync()
 
       await int.reply(`Created profile for <@${userId}>`);
     }
