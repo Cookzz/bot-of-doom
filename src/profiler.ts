@@ -202,8 +202,30 @@ class Profiler {
       return await int.reply("You somehow bypassed all the checks. Need developer to check.")
     }
 
-    async setByUrl(int: any, text: string){
-      const userId = int.user.id;
+    async setProfileFor(int: any, obj: any){
+      const user = obj.user
+      const text = obj.text
+
+      if (!isValidProfileInput(text)){
+        return await int.reply("It has to be either dfprofiler url or an id in digits.")
+      }
+
+      if (isValidDfProfilerUrl(text)){
+        return await this.setByUrl(int, text, user.id)
+      }
+      if (isDigits(text)){
+        return await this.setById(int, text, user.id)
+      }
+
+      return await int.reply("You somehow bypassed all the checks. Need developer to check.")
+    }
+
+    async setByUrl(int: any, text: string, setId?: string){
+      let userId = int.user.id;
+      if (setId){
+        userId = setId
+      }
+
       const { data, error } = await tryCatch(ky.get(text).text())
 
       if (error){
@@ -227,8 +249,12 @@ class Profiler {
       await int.reply(`Created profile for <@${userId}>`);
     }
 
-    async setById(int: any, text: string){
-      const userId = int.user.id;
+    async setById(int: any, text: string, setId?: string){
+      let userId = int.user.id;
+      if (setId){
+        userId = setId
+      }
+
       const { data, error } = await tryCatch(ky.get(`${DFPROFILER.PROFILE_VIEW}/${text}`).text())
 
       if (error){

@@ -18,6 +18,7 @@ class Host {
             clan: (int: any, text: any) => this.profiler.fetchClanLoot(int),
             compete: (int: any, text: any) => this.profiler.fetchClanWeeklyLoot(int),
             set: (int: any, text: any) => this.profiler.setProfile(int, text),
+            setfor: (int: any, text: any) => this.profiler.setProfileFor(int, text),
             me: (int: any, text: any) => this.profiler.getSelfProfile(int),
             who: (int: any, text: any) => this.profiler.getPlayerProfile(int, text)
         }

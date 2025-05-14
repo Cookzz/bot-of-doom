@@ -43,6 +43,25 @@ const setProfile = {
         )
 }
 
+const setForProfile = {
+    ...new SlashCommandBuilder()
+        .setName("setfor")
+        .setDescription("Set a dfprofiler id account to someone")
+        .addUserOption(option =>
+            option
+                .setName('user')
+                .setDescription('mention the user')
+                .setRequired(true)
+        )
+        .addStringOption(option =>
+            option
+                .setName("text2")
+                .setDescription("DFProfiler ID")
+                .setRequired(true)
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+}
+
 const getProfile = {
     ...new SlashCommandBuilder()
         .setName("me")
@@ -53,12 +72,12 @@ const checkProfile = {
     ...new SlashCommandBuilder()
         .setName("who")
         .setDescription("Show someone's dfprofiler (if any)")
-         .addUserOption(option =>
+        .addUserOption(option =>
             option
                 .setName('user')
                 .setDescription('mention the user')
                 .setRequired(true)
-        ),
+        )
 }
 
 const COMMANDS = [
@@ -67,6 +86,7 @@ const COMMANDS = [
     clan,
     compete,
     setProfile,
+    setForProfile,
     getProfile,
     checkProfile
 ]
