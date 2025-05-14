@@ -269,13 +269,7 @@ class Profiler {
     }
 
     async getPlayerProfile(int: any, user: any){
-      const userId = int.user.id;
       const selectedId = user.id
-
-      if (userId === selectedId){
-        await int.reply("No need to search for yourself.")
-        return
-      }
 
       const selectedUser = await db.findOneAsync({ user_id: selectedId })
 
