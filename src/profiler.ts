@@ -6,7 +6,7 @@ import { getDateTime, isBlank, tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
 import Scraper from "./scraper";
 import type { ProfileInfo } from "./types/profile-info.type.ts";
-import { convertToTableArray, getDfProfilerIdByUrl, isDigits, isValidDfProfilerUrl, isValidProfileInput } from "./utils/profiler.util";
+import { convertToTableArray, getCountdown, getDfProfilerIdByUrl, isDigits, isValidDfProfilerUrl, isValidProfileInput } from "./utils/profiler.util";
 import { DFPROFILER } from "./utils/scraper.util";
 
 const Datastore = require('@seald-io/nedb')
@@ -107,6 +107,7 @@ class Profiler {
         }
 
         const formattedDate = getDateTime()
+        const { days, hours, minutes, seconds } = getCountdown();
 
         const tableData = new Array(["No.", "Clan", "Record"]).concat(data)
         const textTable = table(tableData, { drawHorizontalLine: (lineIndex, rowCount) => {
@@ -118,7 +119,7 @@ class Profiler {
             .setTitle("Weekly Clan Top Looter")
             .setDescription(extraEmbed)
             .setColor("#00b0f4")
-            .setFooter({ text: `${formattedDate}` })
+            .setFooter({ text: `${formattedDate} - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
 
         return await int.editReply({ embeds: [embed] })
     }
@@ -138,6 +139,7 @@ class Profiler {
       }
 
       const formattedDate = getDateTime()
+      const { days, hours, minutes, seconds } = getCountdown();
 
       const additionalData = convertToTableArray(data)
       const tableData = new Array(["Name", "Rank", "Weekly Loot"]).concat(additionalData)
@@ -145,12 +147,12 @@ class Profiler {
         return lineIndex === 0 || lineIndex === 1 || lineIndex === rowCount;
       } })
       const extraEmbed = "```" + textTable + "```"
-
+      
       const embed = new EmbedBuilder()
           .setTitle("Weekly Clan Top Looter")
           .setDescription(extraEmbed)
           .setColor("#00b0f4")
-          .setFooter({ text: `${formattedDate}` })
+          .setFooter({ text: `${formattedDate} - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
 
       return await int.editReply({ embeds: [embed] })
     }
@@ -170,6 +172,7 @@ class Profiler {
       }
 
       const formattedDate = getDateTime()
+      const { days, hours, minutes, seconds } = getCountdown();
 
       const additionalData = convertToTableArray(data)
       const tableData = new Array(["Name", "Rank", "Weekly Loot"]).concat(additionalData)
@@ -182,7 +185,7 @@ class Profiler {
             .setTitle("Weekly Clan Competing Top Looter")
             .setDescription(extraEmbed)
             .setColor("#00b0f4")
-            .setFooter({ text: `${formattedDate}` })
+            .setFooter({ text: `${formattedDate} - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
 
       return await int.editReply({ embeds: [embed] })
     }
