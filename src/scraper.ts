@@ -1,9 +1,8 @@
 import ky from 'ky'
 import * as cheerio from 'cheerio';
-import { DFPROFILER, SCRAPE } from "./utils/scraper.util";
-import { tryCatch } from "./utils/common.util";
+import { DFPROFILER, getTableInfo, SCRAPE } from "./utils/scraper.util";
+import { isBlank, tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
-import type { ProfileInfo } from './types/profile-info.type';
 
 class Scraper {
     async getProfile(id: any): Promise<any>{
@@ -145,37 +144,41 @@ class Scraper {
     }
 
     private async getCompeteMembers($: cheerio.CheerioAPI){
-        const links: string[] = []
-        const sel = "tbody tr td";
-        $(sel).each((index, elem) => {
-            const link = $(elem).find('a').attr('href');
-            // Make sure the href attribute exists and is not empty
-            if (link && link.trim() !== '') {
-                links.push(link);
+        // Select the table element
+        const table = $('table');
+
+        // Initialize an empty array to store the table data
+        const tableData: any[] = [];
+        const headerData: any = {};
+
+        table.find('th').each((j, cell) => {
+            // Add the cell data to the row data object
+            const cellText: string = $(cell).text().replace(/[\n\r\t]/gm, "")
+            if (!isBlank(cellText)){
+                headerData[cellText] = j;
             }
-        })
+        });
 
-        let memberInfos = []
+        // Iterate over each row of the table using the find and each methods
+        table.find('tr').each((i, row) => {
+            // Initialize an empty object to store the row data
+            const rowData: any = {};
 
-        for (const link of links) {
-            const profileLink = `${API.BASE_URL}${link}`
-            const { data, error } = await tryCatch(ky.get(profileLink).text())
+            // Iterate over each cell of the row using the find and each methods
+            $(row).find('td').each((j, cell) => {
+                // Add the cell data to the row data object
+                const cleanCellText = $(cell).text().replace(/[\n\r\t]/gm, "")
+                rowData[j] = cleanCellText;
+            });
 
-            if (error){
-                return null
+            // Add the row data to the table data array
+            if (Object.keys(rowData).length > 0){
+                tableData.push(rowData);
             }
+        });
 
-            const profileElement = data
-
-            const $$ = cheerio.load(profileElement)
-            const user_info = this.getBasicInfo($$)
-            const loot_info = this.getMemberClanWeeklyLoot($$)
-
-            const combinedInfo = Object.assign({}, user_info, loot_info)
-            memberInfos.push(combinedInfo)
-        }
-
-        const sortedInfo = memberInfos.filter(m => Number(m.loot_weekly) !== 0).sort((a, b) => Number(b.loot_weekly) - Number(a.loot_weekly))
+        const membersInfo = getTableInfo(headerData, tableData)
+        const sortedInfo = membersInfo.filter(m => Number(m.loot_weekly) !== 0).sort((a, b) => Number(b.loot_weekly) - Number(a.loot_weekly))
 
         return sortedInfo
     }
