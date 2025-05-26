@@ -42,9 +42,13 @@ const getNextMonday = () => {
 
   // Determine how many days until next Monday
   let daysUntilMonday = (8 - day) % 7;
-  if (day === 1 && hour < 3) {
+  console.log("hour", hour)
+  console.log("day", day)
+  if (day === 1 && hour < 11) {
     // If it's still before 11AM UTC on Monday, target today
     daysUntilMonday = 0;
+  } else if (day === 1 && hour > 11){
+    daysUntilMonday = 7
   }
 
   result.setUTCDate(result.getUTCDate() + daysUntilMonday);
