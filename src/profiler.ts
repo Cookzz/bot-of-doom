@@ -2,12 +2,13 @@ import { EmbedBuilder, type Client } from "discord.js";
 import ky from 'ky'
 import { table } from 'table'
 
-import { getDateTime, isBlank, tryCatch } from "./utils/common.util";
+import { getDateTime, isBlank, paginateArray, tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
 import Scraper from "./scraper";
 import type { ProfileInfo } from "./types/profile-info.type.ts";
-import { convertToTableArray, getCountdown, getDfProfilerIdByUrl, isDigits, isValidDfProfilerUrl, isValidProfileInput } from "./utils/profiler.util";
+import { convertItemListToTableArray, convertToTableArray, getCountdown, getDfProfilerIdByUrl, getOutpost, isDigits, isValidDfProfilerUrl, isValidProfileInput, parseTradeList } from "./utils/profiler.util";
 import { DFPROFILER } from "./utils/scraper.util";
+import type { MarketItem } from "./types/profiler.type";
 
 const Datastore = require('@seald-io/nedb')
 const db = new Datastore({ filename: 'db/users.db', autoload: true })
@@ -134,6 +135,7 @@ class Profiler {
         return
       }
       if (!data || !data?.length){
+        console.log("check clan data", data)
           int.editReply("Can't get any clan loot data")
           return
       }
@@ -343,6 +345,137 @@ class Profiler {
 
       if (!selectedUser){
         await int.reply("No profile set for this user.")
+        return
+      }
+
+      const formattedDate = getDateTime()
+
+      await int.deferReply()
+
+      const profileInfo: ProfileInfo | null = await this.scraper.getProfile(selectedUser.profiler_id)
+
+      if (!profileInfo){
+        int.editReply("There is an issue fetching from DFprofiler, please try again later.")
+        return
+      }
+
+      const embed = new EmbedBuilder()
+          .setTitle("Profile")
+          .setDescription(`[DFProfiler Link](https://www.dfprofiler.com/profile/view/${selectedUser.profiler_id})\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
+          .addFields(
+                {
+                  name: "Weekly Loots",
+                  value: profileInfo.loot_weekly,
+                  inline: true
+                },
+                {
+                  name: "All Time loots",
+                  value: profileInfo.loot_alltime,
+                  inline: true
+                },
+                {
+                  name: "",
+                  value: "",
+                  inline: false
+                },
+                {
+                  name: "Clan Weekly Loots",
+                  value: profileInfo.clan_weekly,
+                  inline: true
+                },
+                {
+                  name: "All Time Clan Loots",
+                  value: profileInfo.clan_alltime,
+                  inline: true
+                },
+          )
+          .setColor("#00b0f4")
+          .setFooter({ text: `${formattedDate}` })
+
+      return await int.editReply({ embeds: [embed] })
+    }
+
+    async getMarketPrice(int: any, text: string){
+      const splitText: string[] = text.split(',') 
+
+      const outpostId: string = splitText?.[0] ?? ""
+      const itemName: string = splitText?.[1] ?? ""
+      const page: string = splitText?.[2] ?? "0"
+
+      let currentPage: number = 0
+
+      if (isBlank(outpostId) || isBlank(itemName)){
+        await int.reply("Item or outpost name cannot be blank")
+      }
+
+      if (isDigits(page)){
+        currentPage = parseInt(page)
+
+        if (currentPage > 0){
+          currentPage = currentPage-1 //page is used like an index for array, this is necessary
+        }
+      }
+
+      // `application/x-www-form-urlencoded`
+      const searchParams = new URLSearchParams();
+      searchParams.set('category', '');
+      searchParams.set('location', outpostId);
+      searchParams.set('term', itemName)
+
+      const postData = {
+          body: searchParams,
+          headers: {
+              "X-Requested-With": "XMLHttpRequest"
+          }
+      }
+
+      const { data, error }: any = await tryCatch(ky.post(API.SEARCH_MARKET, postData).json())
+
+      if (error){
+        int.reply("There is an issue fetching from DFprofiler, please try again later.")
+        return
+      }
+      if (!data){
+        int.reply("No items found.")
+        return
+      }
+
+      await int.deferReply()
+
+      const itemList = parseTradeList(data)
+      const paginatedItemList = paginateArray(itemList)
+
+      if ((currentPage+1) > paginatedItemList.length){
+        await int.reply("Page number exceeded. Please try again.")
+        return
+      }
+
+      const currentItemList = paginatedItemList[currentPage]
+      const additionalData = convertItemListToTableArray(currentItemList)
+      const tableData = new Array(["Item Name", "Stat", "Price", "Category"]).concat(additionalData)
+      const textTable = table(tableData, { columns: [{ width: 9 }] })
+      const extraEmbed = "```" + textTable + "```"
+
+      const formattedDate = getDateTime()
+      const embed = new EmbedBuilder()
+            .setTitle(`Marketplace search for: ${itemName} from ${getOutpost(outpostId)}`)
+            .setDescription(extraEmbed)
+            .setColor("#00b0f4")
+            .setFooter({ text: `Page ${(currentPage+1)}/${paginatedItemList.length}.\nData taken from DFProfiler Marketplace @ ${formattedDate}` })
+
+      return await int.editReply({ embeds: [embed] })
+    }
+
+    async getProfileByName(int: any, name: string){
+      if (isBlank(name)){
+        await int.reply("No empty names allowed")
+        return
+      }
+
+      const selectedUser = await db.findOneAsync({ player_id: name })
+
+      if (!selectedUser){
+        await int.reply("No user found for this profile.")
         return
       }
 

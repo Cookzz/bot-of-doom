@@ -20,7 +20,8 @@ class Host {
             set: (int: any, text: any) => this.profiler.setProfile(int, text),
             setfor: (int: any, text: any) => this.profiler.setProfileFor(int, text),
             me: (int: any, text: any) => this.profiler.getSelfProfile(int),
-            who: (int: any, text: any) => this.profiler.getPlayerProfile(int, text)
+            who: (int: any, text: any) => this.profiler.getPlayerProfile(int, text),
+            market: (int: any, text: any) => this.profiler.getMarketPrice(int, text),
         }
     }
 

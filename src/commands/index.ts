@@ -80,6 +80,34 @@ const checkProfile = {
         )
 }
 
+const checkMarket = {
+    ...new SlashCommandBuilder()
+        .setName("market")
+        .setDescription("Check market price of items (only shows 10 items)")
+        .addStringOption(option =>
+            option
+                .setName('text')
+                .setDescription('area to check market from')
+                .setRequired(true)
+                .addChoices(
+                    { name: "Outpost Zone", value: "21" },
+                    { name: "Camp Valcrest", value: "22" }
+                )
+        )
+        .addStringOption(option =>
+            option
+                .setName('text2')
+                .setDescription('name of the item')
+                .setRequired(true)
+        )
+        .addNumberOption(option =>
+            option
+                .setName('number3')
+                .setDescription('page (defaults to 1 if none)')
+                .setRequired(false)
+        )
+}
+
 const COMMANDS = [
     profile,
     clanWeekly,
@@ -88,7 +116,8 @@ const COMMANDS = [
     setProfile,
     setForProfile,
     getProfile,
-    checkProfile
+    checkProfile,
+    checkMarket
 ]
 
 export default COMMANDS;
