@@ -2,11 +2,11 @@ import { EmbedBuilder, type Client } from "discord.js";
 import ky from 'ky'
 import { table } from 'table'
 
-import { getDateTime, isBlank, paginateArray, tryCatch } from "./utils/common.util";
+import { formatCurrency, getDateTime, isBlank, paginateArray, tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
 import Scraper from "./scraper";
 import type { ProfileInfo } from "./types/profile-info.type.ts";
-import { convertItemListToTableArray, convertToTableArray, getCountdown, getDfProfilerIdByUrl, getOutpost, isDigits, isValidDfProfilerUrl, isValidProfileInput, parseTradeList } from "./utils/profiler.util";
+import { convertItemListToTableArray, convertToTableArray, getCountdown, getDfProfilerIdByUrl, getOutpost, isDigits, isValidDfProfilerUrl, isValidProfileInput, parseTradeList, stylizeStats } from "./utils/profiler.util";
 import { DFPROFILER } from "./utils/scraper.util";
 import type { MarketItem } from "./types/profiler.type";
 
@@ -395,7 +395,7 @@ class Profiler {
       return await int.editReply({ embeds: [embed] })
     }
 
-    async getMarketPrice(int: any, text: string){
+    async getMarketPrice(int: any, text: string, simple?: boolean){
       const splitText: string[] = text.split(',') 
 
       const outpostId: string = splitText?.[0] ?? ""
@@ -451,19 +451,37 @@ class Profiler {
       }
 
       const currentItemList = paginatedItemList[currentPage]
-      const additionalData = convertItemListToTableArray(currentItemList)
-      const tableData = new Array(["Item Name", "Stat", "Price", "Category"]).concat(additionalData)
-      const textTable = table(tableData, { columns: [{ width: 9 }] })
-      const extraEmbed = "```" + textTable + "```"
 
-      const formattedDate = getDateTime()
-      const embed = new EmbedBuilder()
-            .setTitle(`Marketplace search for: ${itemName} from ${getOutpost(outpostId)}`)
-            .setDescription(extraEmbed)
-            .setColor("#00b0f4")
-            .setFooter({ text: `Page ${(currentPage+1)}/${paginatedItemList.length}.\nData taken from DFProfiler Marketplace @ ${formattedDate}` })
+      if (simple){
+        const formattedDate = getDateTime()
+        const embed = new EmbedBuilder()
+              .setTitle(`Marketplace search for: ${itemName} from ${getOutpost(outpostId)}`)
+              .setColor("#00b0f4")
+              .setFooter({ text: `Page ${(currentPage+1)}/${paginatedItemList.length}.\nData taken from DFProfiler Marketplace @ ${formattedDate}` })
 
-      return await int.editReply({ embeds: [embed] })
+        for (const item of currentItemList){
+          embed.addFields({
+            name: `${item.itemname} (${stylizeStats(item.stat)})`,
+            value: `${formatCurrency(item.price)} - ${item.category}`
+          })
+        }
+
+        return await int.editReply({ embeds: [embed] })
+      } else {
+        const additionalData = convertItemListToTableArray(currentItemList)
+        const tableData = new Array(["Item Name", "Stat", "Price", "Category"]).concat(additionalData)
+        const textTable = table(tableData, { columns: [{ width: 9 }] })
+        const extraEmbed = "```" + textTable + "```"
+
+        const formattedDate = getDateTime()
+        const embed = new EmbedBuilder()
+              .setTitle(`Marketplace search for: ${itemName} from ${getOutpost(outpostId)}`)
+              .setDescription(extraEmbed)
+              .setColor("#00b0f4")
+              .setFooter({ text: `Page ${(currentPage+1)}/${paginatedItemList.length}.\nData taken from DFProfiler Marketplace @ ${formattedDate}` })
+
+        return await int.editReply({ embeds: [embed] })
+      }
     }
 
     async getProfileByName(int: any, name: string){
