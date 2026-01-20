@@ -22,6 +22,8 @@ class Host {
             me: (int: any, text: any) => this.profiler.getSelfProfile(int),
             who: (int: any, text: any) => this.profiler.getPlayerProfile(int, text),
             market: (int: any, text: any) => this.profiler.getMarketPrice(int, text),
+            simplemarket: (int: any, text: any) => this.profiler.getMarketPrice(int, text, true),
+            reversewho: (int: any, text: any) => this.profiler.getProfileByName(int, text)
         }
     }
 

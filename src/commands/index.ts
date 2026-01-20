@@ -136,6 +136,18 @@ const checkSimpleMarket = {
         )
 }
 
+const getProfileByName = {
+    ...new SlashCommandBuilder()
+        .setName("reversewho")
+        .setDescription("Check if the person exists in discord by their df username")
+        .addStringOption(option =>
+            option
+                .setName("text")
+                .setDescription("DF Profile Name")
+                .setRequired(true)
+        )
+}
+
 const COMMANDS = [
     profile,
     clanWeekly,
@@ -146,7 +158,8 @@ const COMMANDS = [
     getProfile,
     checkProfile,
     checkMarket,
-    checkSimpleMarket
+    checkSimpleMarket,
+    getProfileByName
 ]
 
 export default COMMANDS;

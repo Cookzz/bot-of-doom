@@ -1,14 +1,12 @@
-import { EmbedBuilder, type Client } from "discord.js";
+import { EmbedBuilder, MessageFlags, type Client } from "discord.js";
 import ky from 'ky'
 import { table } from 'table'
-
 import { formatCurrency, getDateTime, isBlank, paginateArray, tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
 import Scraper from "./scraper";
 import type { ProfileInfo } from "./types/profile-info.type.ts";
 import { convertItemListToTableArray, convertToTableArray, getCountdown, getDfProfilerIdByUrl, getOutpost, isDigits, isValidDfProfilerUrl, isValidProfileInput, parseTradeList, stylizeStats } from "./utils/profiler.util";
 import { DFPROFILER } from "./utils/scraper.util";
-import type { MarketItem } from "./types/profiler.type";
 
 const Datastore = require('@seald-io/nedb')
 const db = new Datastore({ filename: 'db/users.db', autoload: true })
@@ -239,8 +237,9 @@ class Profiler {
       }
 
       const id = getDfProfilerIdByUrl(text)
+      const { data: name } = await tryCatch(this.scraper.getProfile(id))
 
-      const doc = { user_id: userId, profiler_id: id }
+      const doc = { user_id: userId, profiler_id: id, name }
       
       const insertResponse = await tryCatch(db.updateAsync({ user_id: userId }, doc, { upsert: true }))
       if (insertResponse.error){
@@ -260,14 +259,14 @@ class Profiler {
         userId = setId
       }
 
-      const { data, error } = await tryCatch(ky.get(`${DFPROFILER.PROFILE_VIEW}/${text}`).text())
+      const { data: name, error } = await tryCatch(this.scraper.getProfile(text))
 
       if (error){
         await int.reply("This DFProfiler ID is not valid. Try again.")
         return
       }
 
-      const doc = { user_id: userId, profiler_id: text }
+      const doc = { user_id: userId, profiler_id: text, name }
       
       const insertResponse = await tryCatch(db.updateAsync({ user_id: userId }, doc, { upsert: true }))
       if (insertResponse.error){
@@ -449,7 +448,7 @@ class Profiler {
         await int.reply("Page number exceeded. Please try again.")
         return
       }
-
+    
       const currentItemList = paginatedItemList[currentPage]
 
       if (simple){
@@ -490,7 +489,13 @@ class Profiler {
         return
       }
 
-      const selectedUser = await db.findOneAsync({ player_id: name })
+      let selectedUser = null
+
+      if (isDigits(name)){
+        selectedUser = await db.findOneAsync({ player_id: name })
+      } else {
+        selectedUser = await db.findOneAsync({ name })
+      }
 
       if (!selectedUser){
         await int.reply("No user found for this profile.")
@@ -499,7 +504,7 @@ class Profiler {
 
       const formattedDate = getDateTime()
 
-      await int.deferReply()
+      await int.deferReply({ flags: MessageFlags.Ephemeral })
 
       const profileInfo: ProfileInfo | null = await this.scraper.getProfile(selectedUser.profiler_id)
 
@@ -510,7 +515,7 @@ class Profiler {
 
       const embed = new EmbedBuilder()
           .setTitle("Profile")
-          .setDescription(`[DFProfiler Link](https://www.dfprofiler.com/profile/view/${selectedUser.profiler_id})\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
+          .setDescription(`User: <@${selectedUser.user_id}>. [DFProfiler Link](https://www.dfprofiler.com/profile/view/${selectedUser.profiler_id})\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
           .addFields(
                 {
                   name: "Weekly Loots",
