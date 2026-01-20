@@ -515,7 +515,7 @@ class Profiler {
 
       const embed = new EmbedBuilder()
           .setTitle("Profile")
-          .setDescription(`User: <@${selectedUser.user_id}>. [DFProfiler Link](https://www.dfprofiler.com/profile/view/${selectedUser.profiler_id})\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
+          .setDescription(`User: <@${selectedUser.user_id}>. ([DFProfiler Link](https://www.dfprofiler.com/profile/view/${selectedUser.profiler_id}))\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
           .addFields(
                 {
                   name: "Weekly Loots",
