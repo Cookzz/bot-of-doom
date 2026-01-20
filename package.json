@@ -18,6 +18,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@isaacs/ttlcache": "^2.1.4",
     "@seald-io/nedb": "^4.1.2",
     "cheerio": "^1.1.2",
     "discord.js": "^14.25.1",
