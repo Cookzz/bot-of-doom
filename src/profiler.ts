@@ -434,12 +434,11 @@ class Profiler {
         int.reply("There is an issue fetching from DFprofiler, please try again later.")
         return
       }
-      if (!data){
+      console.log("data", data)
+      if (!data || data?.tradelist_maxresults === "0"){
         int.reply("No items found.")
         return
       }
-
-      await int.deferReply()
 
       const itemList = parseTradeList(data)
       const paginatedItemList = paginateArray(itemList)
@@ -448,6 +447,8 @@ class Profiler {
         await int.reply("Page number exceeded. Please try again.")
         return
       }
+
+      await int.deferReply()
     
       const currentItemList = paginatedItemList[currentPage]
 
