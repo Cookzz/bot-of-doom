@@ -15,7 +15,7 @@
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@isaacs/ttlcache": "^2.1.4",
