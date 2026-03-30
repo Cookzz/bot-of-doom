@@ -26,6 +26,6 @@
     "noPropertyAccessFromIndexSignature": false,
 
     // Typescript 6 config
-    "types": ["bun"]
+    "types": ["bun", "node", "ws"]
   }
 }
