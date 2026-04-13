@@ -32,11 +32,7 @@ export const getOutpost = (value: string) => {
 }
 
 export const removeSpecificRankText = (str: string) => {
-    return str.replace('Troops of Doom', '')
-              .replace('Rank:', '')
-              .replace('(', '')
-              .replace(')', '')
-              .trim()
+    return str.replace(/Troops of Doom|Rank:|\(|\)/g, '').trim();
 }
 
 export const isValidProfileInput = (text: string) => {
