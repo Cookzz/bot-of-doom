@@ -29,6 +29,12 @@ class Host {
 
     async onCommand(interaction: ChatInputCommandInteraction<CacheType>, command: string) {
         const text = validateInput(interaction)
+
+        //handle an edge case
+        if (!this.commands?.[command]){
+            await interaction.reply("Command does not exist")
+            return
+        }
         
         await this.commands[command](interaction, text)
     }
