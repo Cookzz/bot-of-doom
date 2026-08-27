@@ -15,15 +15,15 @@
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^6.0.2"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@isaacs/ttlcache": "^2.1.4",
+    "@isaacs/ttlcache": "^2.1.5",
     "@seald-io/nedb": "^4.1.2",
     "cheerio": "^1.2.0",
-    "discord.js": "^14.26.2",
-    "ky": "^2.0.0",
-    "node-cron": "^4.2.1",
+    "discord.js": "^14.27.0",
+    "ky": "^2.0.2",
+    "node-cron": "^4.6.0",
     "table": "^6.9.0"
   },
   "resolutions": {
