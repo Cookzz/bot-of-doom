@@ -40,3 +40,14 @@ export const addVoter = async(messageId: string, userId: string, username: strin
   //make sure no duplicate exists during updates
   await voterDb.compactDatafileAsync()
 }
+
+export const getVoteCollection = async(): Promise<Vote[] | null> => {
+  const voteCollection = await voteDb.findAsync({})
+
+  if (!voteCollection) {
+    console.log("No votes exist")
+    return null
+  }
+
+  return voteCollection
+}
