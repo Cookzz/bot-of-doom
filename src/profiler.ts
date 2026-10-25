@@ -97,11 +97,11 @@ class Profiler {
         const { data, error }: any = await tryCatch(this.scraper.getClanWeekly())
 
         if (error){
-            int.reply("There is an issue fetching from DFprofiler, please try again later.")
+            int.editReply("There is an issue fetching from DFprofiler, please try again later.")
             return
         }
         if (!data || !data?.length){
-            int.reply("Can't get top clan weekly loot.")
+            int.editReply("Can't get top clan weekly loot.")
             return
         }
 
@@ -133,7 +133,6 @@ class Profiler {
         return
       }
       if (!data || !data?.length){
-        console.log("check clan data", data)
           int.editReply("Can't get any clan loot data")
           return
       }
@@ -147,7 +146,7 @@ class Profiler {
         return lineIndex === 0 || lineIndex === 1 || lineIndex === rowCount;
       } })
       const extraEmbed = "```" + textTable + "```"
-      
+
       const embed = new EmbedBuilder()
           .setTitle("Weekly Clan Top Looter")
           .setDescription(extraEmbed)
@@ -240,7 +239,7 @@ class Profiler {
       const { data: name } = await tryCatch(this.scraper.getProfile(id))
 
       const doc = { user_id: userId, profiler_id: id, name }
-      
+
       const insertResponse = await tryCatch(db.updateAsync({ user_id: userId }, doc, { upsert: true }))
       if (insertResponse.error){
         console.log("There's a problem inserting into DB")
@@ -267,7 +266,7 @@ class Profiler {
       }
 
       const doc = { user_id: userId, profiler_id: text, name }
-      
+
       const insertResponse = await tryCatch(db.updateAsync({ user_id: userId }, doc, { upsert: true }))
       if (insertResponse.error){
         console.log("There's a problem inserting into DB")
@@ -283,9 +282,13 @@ class Profiler {
     async getSelfProfile(int: any){
       const userId = int.user.id;
 
-      const user = await db.findOneAsync({ user_id: userId })
-
-      if (!user){
+      // const user = await db.findOneAsync({ user_id: userId })
+      const { data, error }: any = await tryCatch(db.findOneAsync({ user_id: userId }))
+      if (error) {
+        await int.reply("There is an issue finding the user, please try again.")
+        return
+      }
+      if (!data){
         await int.reply("No profile set. Use /set <dfprofilerid> to use this command.")
         return
       }
@@ -294,7 +297,7 @@ class Profiler {
 
       await int.deferReply()
 
-      const profileInfo: ProfileInfo | null = await this.scraper.getProfile(user.profiler_id)
+      const profileInfo: ProfileInfo | null = await this.scraper.getProfile(data.profiler_id)
 
       if (!profileInfo){
         int.editReply("There is an issue fetching from DFprofiler, please try again later.")
@@ -303,7 +306,7 @@ class Profiler {
 
       const embed = new EmbedBuilder()
           .setTitle("Profile")
-          .setDescription(`[DFProfiler Link](https://www.dfprofiler.com/profile/view/${user.profiler_id})\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
+          .setDescription(`[DFProfiler Link](https://www.dfprofiler.com/profile/view/${data.profiler_id})\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
           .addFields(
                 {
                   name: "Weekly Loots",
@@ -340,13 +343,19 @@ class Profiler {
     async getPlayerProfile(int: any, user: any){
       const selectedId = user.id
 
-      const selectedUser = await db.findOneAsync({ user_id: selectedId })
+      const res = await tryCatch(db.findOneAsync({ user_id: selectedId }))
 
-      if (!selectedUser){
+      if (res.error) {
+        await int.reply("Issue fetching profile for this user. Please try again")
+        return
+      }
+
+      if (!res?.data){
         await int.reply("No profile set for this user.")
         return
       }
 
+      const selectedUser: any = res.data
       const formattedDate = getDateTime()
 
       await int.deferReply()
@@ -395,7 +404,7 @@ class Profiler {
     }
 
     async getMarketPrice(int: any, text: string, simple?: boolean){
-      const splitText: string[] = text.split(',') 
+      const splitText: string[] = text.split(',')
 
       const outpostId: string = splitText?.[0] ?? ""
       const itemName: string = splitText?.[1] ?? ""
@@ -405,6 +414,7 @@ class Profiler {
 
       if (isBlank(outpostId) || isBlank(itemName)){
         await int.reply("Item or outpost name cannot be blank")
+        return;
       }
 
       if (isDigits(page)){
@@ -449,7 +459,7 @@ class Profiler {
       }
 
       await int.deferReply()
-    
+
       const currentItemList = paginatedItemList[currentPage]
 
       if (simple){
