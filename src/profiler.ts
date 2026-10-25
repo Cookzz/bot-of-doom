@@ -228,15 +228,12 @@ class Profiler {
         userId = setId
       }
 
-      const { data, error } = await tryCatch(ky.get(text).text())
-
+      const id = getDfProfilerIdByUrl(text)
+      const { data: name, error } = await tryCatch(this.scraper.getProfile(id))
       if (error){
         await int.reply("This DFProfiler URL is not valid. Try again.")
         return
       }
-
-      const id = getDfProfilerIdByUrl(text)
-      const { data: name } = await tryCatch(this.scraper.getProfile(id))
 
       const doc = { user_id: userId, profiler_id: id, name }
 

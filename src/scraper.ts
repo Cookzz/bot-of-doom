@@ -26,7 +26,7 @@ class Scraper {
         const { data, error } = await tryCatch(ky.get(DFPROFILER.CLAN_WEEKLY).text())
 
         if (error){
-            return null
+            return { data: null, error }
         }
 
         const weeklyClanElement = data
