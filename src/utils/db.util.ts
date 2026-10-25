@@ -28,19 +28,6 @@ export const removeVoteCollector = async (messageId: string): Promise<void> => {
   await voteDb.compactDatafileAsync()
 }
 
-export const addVoter = async(messageId: string, userId: string, username: string, vote: boolean) => {
-  const doc: Voter = { message_id: messageId, user_id: userId, username, participate: vote }
-
-  const insertResponse = await tryCatch(voterDb.updateAsync({ user_id: userId }, doc, { upsert: true }))
-  if (insertResponse.error){
-    console.log("There's a problem inserting into DB")
-    return
-  }
-
-  //make sure no duplicate exists during updates
-  await voterDb.compactDatafileAsync()
-}
-
 export const getVoteCollection = async(): Promise<Vote[] | null> => {
   const voteCollection = await voteDb.findAsync({})
 
