@@ -76,6 +76,37 @@ export const formatCurrency = (str: string) => {
 }
 
 /**
+ * Runs an async function over items with a bounded number of concurrent
+ * requests (worker pool), preserving result order. Failed items resolve to
+ * whatever `fn` returns for an error (e.g. null), so they can be skipped
+ * by the caller.
+ *
+ * @param {T[]} items - The source items.
+ * @param {number} limit - Max number of concurrent requests.
+ * @param {Function} fn - Async function applied to each item.
+ * @returns {Promise<R[]>} Results in the same order as `items`.
+ */
+export const mapLimit = async <T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> => {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  // Shared cursor: each worker pulls the next index as soon as it frees up,
+  // so a slow request never stalls the ones already finished.
+  const worker = async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      const item = items[index];
+      if (item === undefined) continue; // cannot happen in practice, satisfies noUncheckedIndexedAccess
+      results[index] = await fn(item);
+    }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));
+
+  return results;
+}
+
+/**
  * Splits an array into an array of arrays (pages).
  *
  * @param {Array} data - The source array of objects.

@@ -1,7 +1,7 @@
 import ky from 'ky'
 import * as cheerio from 'cheerio';
 import { DFPROFILER, getTableInfo, SCRAPE } from "./utils/scraper.util";
-import { isBlank, tryCatch } from "./utils/common.util";
+import { isBlank, mapLimit, tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
 
 class Scraper {
@@ -103,6 +103,11 @@ class Scraper {
         return rows.slice(0, 25)
     }
 
+    /*
+      /clan needs each member's personal weekly loot, which only exists on
+       their individual profile page, so these must be fetched one by one
+       (with a small concurrency limit so it doesn't overwhelm df profile)
+    */
     private async getMembers($: cheerio.CheerioAPI){
         const links: string[] = []
         const sel = "tbody tr td";
@@ -114,9 +119,7 @@ class Scraper {
             }
         })
 
-        let memberInfos = []
-
-        for (const link of links) {
+        const memberInfos: any[] = await mapLimit(links, 4, async (link: string) => {
             const profileLink = `${API.BASE_URL}${link}`
             const { data, error } = await tryCatch(ky.get(profileLink).text())
 
@@ -130,11 +133,11 @@ class Scraper {
             const user_info = this.getBasicInfo($$)
             const loot_info = this.getMemberWeeklyLoot($$)
 
-            const combinedInfo = Object.assign({}, user_info, loot_info)
-            memberInfos.push(combinedInfo)
-        }
+            return Object.assign({}, user_info, loot_info)
+        })
 
-        const sortedInfo = memberInfos.sort((a, b) => Number(b.loot_weekly) - Number(a.loot_weekly))
+        const validMembers = memberInfos.filter(info => info)
+        const sortedInfo = validMembers.sort((a, b) => Number(b.loot_weekly) - Number(a.loot_weekly))
 
         return sortedInfo
     }
