@@ -46,10 +46,8 @@ class Scraper {
 
         const clanElement = data
         const $ = cheerio.load(clanElement)
-        
-        const result = await this.getMembers($)
 
-        return result
+        return this.getMembers($)
     }
 
     async getCompetingClanMemberWeeklyLoot(){
@@ -61,17 +59,15 @@ class Scraper {
 
         const clanElement = data
         const $ = cheerio.load(clanElement)
-        
-        const result = await this.getCompeteMembers($)
 
-        return result
+        return this.getCompeteMembers($)
     }
 
     private getBasicInfo($: cheerio.CheerioAPI){
-        return $.extract({ 
+        return $.extract({
             name: '.profiler-username-header',
             clan: '.clan',
-            profession_level: 'div[data-bind="text: profession_level"]' 
+            profession_level: 'div[data-bind="text: profession_level"]'
         })
     }
 
@@ -125,7 +121,7 @@ class Scraper {
             const { data, error } = await tryCatch(ky.get(profileLink).text())
 
             if (error){
-                return null
+                return null //skip failed profiles, keep fetching the rest
             }
 
             const profileElement = data
@@ -143,7 +139,7 @@ class Scraper {
         return sortedInfo
     }
 
-    private async getCompeteMembers($: cheerio.CheerioAPI){
+    private getCompeteMembers($: cheerio.CheerioAPI){
         // Select the table element
         const table = $('table');
 
