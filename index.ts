@@ -49,15 +49,11 @@ try {
     job.executeJob()
   });
 
-  client.on(Events.InteractionCreate, async interaction => {
+  client.on(Events.InteractionCreate, interaction => {
     if (!interaction.isChatInputCommand()) return;
 
     host.onCommand(interaction, interaction.commandName)
   });
-
-  // client.on(Events.MessageReactionAdd, (reaction) => {
-  // reaction.
-  // })
 
   client.login(TOKEN);
 } catch (error) {

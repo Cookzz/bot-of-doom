@@ -1,7 +1,7 @@
 import { EmbedBuilder, TextChannel, User, type Client } from "discord.js";
 import nodeCron from "node-cron";
 import { ANNOUNCEMENT_CHANNEL_ID, REPORT_CHANNEL_ID, VOTE_ANNOUNCEMENT_WITH_DATE } from "./constant";
-import { getUpcomingWeek } from "./utils/common.util";
+import { getUpcomingWeek, tryCatch } from "./utils/common.util";
 import { createVoteCollector, getVoteCollection, removeVoteCollector } from "./utils/db.util";
 import type { Vote } from "./types/vote-collection.type";
 
@@ -52,9 +52,10 @@ class Job {
         return
       }
 
-      voteToProcess.forEach(async(vote: Vote) => {
-        await this.processVotes(vote)
-      })
+      for (const vote of voteToProcess) {
+        const { error } = await tryCatch(this.processVotes(vote))
+        if (error) console.error("Failed processing vote", vote.message_id, error)
+      }
     }
 
     /* Send weekly votes before weekly resets */

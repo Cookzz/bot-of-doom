@@ -40,7 +40,11 @@ class Host {
             return
         }
 
-        await this.commands[command](interaction, text)
+        try {
+          await this.commands[command](interaction, text)
+        } catch (err) {
+          await interaction.reply("Something went wrong.")
+        }
     }
 }
 
