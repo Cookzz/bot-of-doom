@@ -37,6 +37,34 @@ export const getDateTime = () => {
     return formatter.format(date);
 }
 
+export const getUpcomingWeek = () => {
+    const nextWeekStart = new Date();
+    const currentDay = nextWeekStart.getDay();
+    const daysUntilNextMonday = currentDay === 0 ? 1 : 8 - currentDay;
+
+    nextWeekStart.setDate(nextWeekStart.getDate() + daysUntilNextMonday);
+
+    const weekAfterNextStart = new Date(nextWeekStart);
+    weekAfterNextStart.setDate(nextWeekStart.getDate() + 7);
+
+    nextWeekStart.setHours(0, 0, 0, 0);
+    weekAfterNextStart.setHours(0, 0, 0, 0);
+
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    });
+
+    const nextWeek = formatter.format(nextWeekStart)
+    const weekAfterNext = formatter.format(weekAfterNextStart)
+
+    return {
+        nextWeek,
+        weekAfterNext
+    };
+}
+
 export const formatCurrency = (str: string) => {
   const f = new Intl.NumberFormat('en-US', {
     style: 'currency',

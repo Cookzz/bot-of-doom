@@ -1,0 +1,42 @@
+import type { Vote, Voter } from "../types/vote-collection.type";
+import { tryCatch } from "./common.util";
+
+const Datastore = require('@seald-io/nedb')
+const voteDb = new Datastore({ filename: 'db/votesMain.db', autoload: true })
+
+export const createVoteCollector = async(messageId: string, expiryDate: string): Promise<void> => {
+  const doc: Vote = { message_id: messageId, expiry_date: expiryDate }
+
+  const insertResponse = await tryCatch(voteDb.updateAsync({ message_id: messageId }, doc, { upsert: true }))
+  if (insertResponse.error){
+    console.log("There's a problem inserting into DB")
+    return
+  }
+
+  //make sure no duplicate exists during updates
+  await voteDb.compactDatafileAsync()
+}
+
+export const removeVoteCollector = async (messageId: string): Promise<void> => {
+  const insertResponse = await tryCatch(voteDb.removeAsync({ message_id: messageId }, {}))
+  if (insertResponse.error){
+    console.log("There's a problem removing from DB")
+    return
+  }
+
+  //make sure no duplicate exists during updates
+  await voteDb.compactDatafileAsync()
+}
+
+export const addVoter = async(messageId: string, userId: string, username: string, vote: boolean) => {
+  const doc: Voter = { message_id: messageId, user_id: userId, username, participate: vote }
+
+  const insertResponse = await tryCatch(voterDb.updateAsync({ user_id: userId }, doc, { upsert: true }))
+  if (insertResponse.error){
+    console.log("There's a problem inserting into DB")
+    return
+  }
+
+  //make sure no duplicate exists during updates
+  await voterDb.compactDatafileAsync()
+}

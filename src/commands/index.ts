@@ -148,6 +148,13 @@ const getProfileByName = {
         )
 }
 
+const getParticipantVote = {
+    ...new SlashCommandBuilder()
+        .setName("compvote")
+        .setDescription("Make an announcement to get participants for CTL")
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+}
+
 const COMMANDS = [
     profile,
     clanWeekly,
@@ -159,7 +166,8 @@ const COMMANDS = [
     checkProfile,
     checkMarket,
     checkSimpleMarket,
-    getProfileByName
+    getProfileByName,
+    getParticipantVote
 ]
 
 export default COMMANDS;

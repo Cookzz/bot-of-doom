@@ -1,16 +1,19 @@
 import { ChatInputCommandInteraction, Client, type CacheType } from 'discord.js';
 import { validateInput } from './utils/host.util';
 import Profiler from './profiler';
+import Job from './job'
 import type { Commands } from './types/command.type';
 
 class Host {
     private readonly client: Client
     private readonly commands: Commands
     private readonly profiler: Profiler
+    private readonly job: Job
 
     constructor(client: Client) {
         this.client = client
         this.profiler = new Profiler(client)
+        this.job = new Job(client)
 
         this.commands = {
             profile: (int: any, text: any) => this.profiler.fetchProfile(int, text),
@@ -23,7 +26,8 @@ class Host {
             who: (int: any, text: any) => this.profiler.getPlayerProfile(int, text),
             market: (int: any, text: any) => this.profiler.getMarketPrice(int, text),
             simplemarket: (int: any, text: any) => this.profiler.getMarketPrice(int, text, true),
-            reversewho: (int: any, text: any) => this.profiler.getProfileByName(int, text)
+            reversewho: (int: any, text: any) => this.profiler.getProfileByName(int, text),
+            compvote: (int: any, text: any) => this.job.weeklyCtlVoting()
         }
     }
 
@@ -35,7 +39,7 @@ class Host {
             await interaction.reply("Command does not exist")
             return
         }
-        
+
         await this.commands[command](interaction, text)
     }
 }

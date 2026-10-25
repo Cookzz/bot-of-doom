@@ -3,6 +3,7 @@ import { Client, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import COMMANDS from './src/commands'
 import { existsSync } from 'node:fs'
 import Host from './src/host';
+import Job from './src/job';
 
 const cmd = COMMANDS
 
@@ -29,29 +30,35 @@ try {
   console.log('Successfully reloaded application (/) commands.');
 
   /* 4. Setup client and login to discord bot */
-  const client = new Client({ 
+  const client = new Client({
     intents: [
-      GatewayIntentBits.Guilds, 
-      GatewayIntentBits.GuildMessages, 
-      GatewayIntentBits.GuildPresences, 
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildMessageReactions,
+      GatewayIntentBits.GuildPresences,
       GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildVoiceStates
-    ] 
+    ]
   });
-  
+
   const host = new Host(client)
-  
+  const job = new Job(client)
+
   client.on(Events.ClientReady, readyClient => {
     console.log(`Logged in as ${readyClient.user.tag}!`);
+    job.executeJob()
   });
-  
+
   client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
-  
+
     host.onCommand(interaction, interaction.commandName)
   });
-  
-  
+
+  // client.on(Events.MessageReactionAdd, (reaction) => {
+  // reaction.
+  // })
+
   client.login(TOKEN);
 } catch (error) {
   console.error("Config error: ", error);
