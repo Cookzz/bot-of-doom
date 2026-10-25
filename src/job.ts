@@ -1,4 +1,4 @@
-import { Collection, EmbedBuilder, ReactionUserManager, TextChannel, User, type Client } from "discord.js";
+import { EmbedBuilder, TextChannel, User, type Client } from "discord.js";
 import nodeCron from "node-cron";
 import { ANNOUNCEMENT_CHANNEL_ID, REPORT_CHANNEL_ID, VOTE_ANNOUNCEMENT_WITH_DATE } from "./constant";
 import { getUpcomingWeek } from "./utils/common.util";
