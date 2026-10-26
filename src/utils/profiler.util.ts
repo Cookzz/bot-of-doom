@@ -28,7 +28,7 @@ export const getOutpost = (value: string) => {
     "22": "Camp Valcrest"
   }
 
-  return outpost[value]
+  return outpost[value] ?? null
 }
 
 export const removeSpecificRankText = (str: string) => {
@@ -100,7 +100,7 @@ export const getCountdown = () => {
 }
 
 export const parseTradeList = (data: RawData, limit?: number): TradeItem[] => {
-const itemMap = new Map<number, TradeItem>();
+  const itemMap = new Map<number, TradeItem>();
 
   // Regex to parse the keys: "tradelist_", index, "_", property
   const keyPattern = /^tradelist_(\d+)_(.+)$/;

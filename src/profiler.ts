@@ -28,14 +28,11 @@ class Profiler {
         searchParams.append("dataType", "json")
         searchParams.append("query", text)
 
-        const postData = {
-            body: searchParams,
+        const { data, error }: any = await tryCatch(ky.get(`${API.SEARCH_PROFILE}/${profileName}?${searchParams}`, {
             headers: {
                 "X-Requested-With": "XMLHttpRequest"
             }
-        }
-
-        const { data, error }: any = await tryCatch(ky.post(`${API.SEARCH_PROFILE}/${profileName}`, postData).json())
+        }).json())
 
         if (error){
             int.reply("There is an issue fetching from DFprofiler, please try again later.")
@@ -56,7 +53,7 @@ class Profiler {
 
         const embed = new EmbedBuilder()
             .setTitle("Profile")
-            .setDescription(`[DFProfiler Link](https://www.dfprofiler.com/profile/view/${data[0].player_id})\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
+            .setDescription(`[DFProfiler Link](${API.PROFILE_VIEW}/${data[0].player_id})\n**Name:** ${profileInfo.name}\n**Profession & Level:** ${profileInfo.profession_level}\n**Clan & Rank:** ${isBlank(profileInfo.clan) ? "None" : profileInfo.clan}\n\n**__Loot Records__**`)
             .addFields(
                   {
                     name: "Weekly Loots",
@@ -412,6 +409,8 @@ class Profiler {
         await int.reply("Item or outpost name cannot be blank")
         return;
       }
+      if (getOutpost(outpostId)) {
+        await int.reply("Invalid outpost")
 
       if (isDigits(page)){
         currentPage = parseInt(page)
