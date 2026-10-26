@@ -155,6 +155,12 @@ const getParticipantVote = {
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 }
 
+const countdown = {
+    ...new SlashCommandBuilder()
+        .setName("countdown")
+        .setDescription("Get countdown (estimated) for the next weekly reset from the time of this command.")
+}
+
 const COMMANDS = [
     profile,
     clanWeekly,
@@ -167,7 +173,8 @@ const COMMANDS = [
     checkMarket,
     checkSimpleMarket,
     getProfileByName,
-    getParticipantVote
+    getParticipantVote,
+    countdown
 ]
 
 export default COMMANDS;

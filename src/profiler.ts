@@ -556,6 +556,12 @@ class Profiler {
 
       return await int.editReply({ embeds: [embed] })
     }
+
+    public getCompCountdown(int: any) {
+      const { days, hours, minutes, seconds } = getCountdown();
+
+      int.reply(`Estimated time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s`)
+    }
 }
 
 export default Profiler

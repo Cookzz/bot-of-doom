@@ -27,7 +27,8 @@ class Host {
             market: (int: any, text: any) => this.profiler.getMarketPrice(int, text),
             simplemarket: (int: any, text: any) => this.profiler.getMarketPrice(int, text, true),
             reversewho: (int: any, text: any) => this.profiler.getProfileByName(int, text),
-            compvote: (int: any, text: any) => this.job.weeklyCtlVoting()
+            compvote: (int: any, text: any) => this.job.weeklyCtlVoting(),
+            countdown: (int: any, text: any) => this.profiler.getCompCountdown(int)
         }
     }
 
