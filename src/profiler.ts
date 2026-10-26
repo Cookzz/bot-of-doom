@@ -411,6 +411,8 @@ class Profiler {
       }
       if (getOutpost(outpostId)) {
         await int.reply("Invalid outpost")
+        return;
+      }
 
       if (isDigits(page)){
         currentPage = parseInt(page)
