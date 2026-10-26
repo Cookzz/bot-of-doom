@@ -16,11 +16,11 @@ class Job {
     executeJob(){
         nodeCron.schedule('0 18 * * 4', () => {
             this.weeklyCtlVoting()
-        });
+        }, { timezone: 'UTC' });
 
         nodeCron.schedule('*/5 * * * *', () => {
           this.checkVote()
-        });
+        }, { timezone: 'UTC' });
 
         this.weeklyReminder()
 
@@ -28,13 +28,32 @@ class Job {
         // this.weeklyCtlVoting()
     }
 
+    /* Resolve a text channel by id, properly fetching it from the API
+       instead of trusting the (possibly empty) cache */
+    private async getChannel(channelId: string): Promise<TextChannel | null> {
+        const { data, error } = await tryCatch(this.client.channels.fetch(channelId))
+
+        if (error || !data) {
+            console.error(`Channel ${channelId} not found or not accessible. Did the ID change, or is the bot missing access?`, error)
+            return null
+        }
+
+        if (!data.isTextBased() || !(data instanceof TextChannel)) {
+            console.error(`Channel ${channelId} is not a text channel.`)
+            return null
+        }
+
+        return data
+    }
+
     /* Send announcement when weekly reset is here. Temporarily unused */
     weeklyReminder(){
-      const channel = <TextChannel>this.client.channels.cache.get(ANNOUNCEMENT_CHANNEL_ID)
+        nodeCron.schedule('0 19 * * 1', async () => {
+            const channel = await this.getChannel(ANNOUNCEMENT_CHANNEL_ID)
+            if (!channel) return
 
-        nodeCron.schedule('0 19 * * 1', () => {
-            channel.send("@everyone Weekly reset is here - 11am UTC, 7pm GMT+8")
-        });
+            await channel.send("@everyone Weekly reset is here - 11am UTC, 7pm GMT+8")
+        }, { timezone: 'UTC' });
     }
 
     async checkVote() {
@@ -65,16 +84,15 @@ class Job {
 
         const { nextWeek, weekAfterNext } = getUpcomingWeek()
 
-        try {
-          const message = await channel.send(VOTE_ANNOUNCEMENT_WITH_DATE(nextWeek, weekAfterNext))
-          await message.react('✅')
-          await message.react('❌')
+        const message = await channel.send(VOTE_ANNOUNCEMENT_WITH_DATE(nextWeek, weekAfterNext))
+        await message.react('✅')
+        await message.react('❌')
 
-          const expiryDate = new Date(Date.now() + 259200000).toISOString()
+        const expiryDate = new Date(Date.now() + 259200000).toISOString()
 
-          await createVoteCollector(message.id, expiryDate)
-        } catch (error) {
-          await reportChannel.send(`Vote collection failed to trigger, please manually trigger again. Reason: ${JSON.stringify(error)}`)
+        const { error } = await tryCatch(createVoteCollector(message.id, expiryDate))
+        if (error) {
+            await reportChannel.send(`Vote collection failed to trigger, please manually trigger again. Reason: ${error}`)
         }
     }
 

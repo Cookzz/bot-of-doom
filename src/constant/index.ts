@@ -18,5 +18,5 @@ For those unfamiliar with the weekly comp registration process kindly read this:
 
 Thanks @everyone`)
 
-export const ANNOUNCEMENT_CHANNEL_ID = "1364224659553259580"
-export const REPORT_CHANNEL_ID = "1476517940256968754"
+export const ANNOUNCEMENT_CHANNEL_ID = "233231390282350594"
+export const REPORT_CHANNEL_ID = "233231390282350594"

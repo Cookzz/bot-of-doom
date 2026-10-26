@@ -21,7 +21,7 @@ export const tryCatch = async<T, E = Error>(promise: Promise<T>): Promise<Result
 }
 
 export const isBlank = (str: string) => {
-    return (!str || str.length === 0 || str.trim() === "") 
+    return (!str || str.length === 0 || str.trim() === "")
 }
 
 export const getDateTime = () => {
@@ -39,16 +39,14 @@ export const getDateTime = () => {
 
 export const getUpcomingWeek = () => {
     const nextWeekStart = new Date();
-    const currentDay = nextWeekStart.getDay();
+    const currentDay = nextWeekStart.getUTCDay();
     const daysUntilNextMonday = currentDay === 0 ? 1 : 8 - currentDay;
 
-    nextWeekStart.setDate(nextWeekStart.getDate() + daysUntilNextMonday);
+    nextWeekStart.setUTCDate(nextWeekStart.getUTCDate() + daysUntilNextMonday);
+    nextWeekStart.setUTCHours(0, 0, 0, 0);
 
     const weekAfterNextStart = new Date(nextWeekStart);
-    weekAfterNextStart.setDate(nextWeekStart.getDate() + 7);
-
-    nextWeekStart.setHours(0, 0, 0, 0);
-    weekAfterNextStart.setHours(0, 0, 0, 0);
+    weekAfterNextStart.setUTCDate(nextWeekStart.getUTCDate() + 7);
 
     const formatter = new Intl.DateTimeFormat('en-US', {
         day: '2-digit',

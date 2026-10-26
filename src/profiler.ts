@@ -117,7 +117,7 @@ class Profiler {
             .setTitle("Weekly Clan Top Looter")
             .setDescription(extraEmbed)
             .setColor("#00b0f4")
-            .setFooter({ text: `${formattedDate} - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
+            .setFooter({ text: `${formattedDate} UTC - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
 
         return await int.editReply({ embeds: [embed] })
     }
@@ -150,7 +150,7 @@ class Profiler {
           .setTitle("Weekly Clan Top Looter")
           .setDescription(extraEmbed)
           .setColor("#00b0f4")
-          .setFooter({ text: `${formattedDate} - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
+          .setFooter({ text: `${formattedDate} UTC - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
 
       return await int.editReply({ embeds: [embed] })
     }
@@ -183,7 +183,7 @@ class Profiler {
             .setTitle("Weekly Clan Competing Top Looter")
             .setDescription(extraEmbed)
             .setColor("#00b0f4")
-            .setFooter({ text: `${formattedDate} - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
+            .setFooter({ text: `${formattedDate} UTC - time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s` })
 
       return await int.editReply({ embeds: [embed] })
     }

@@ -80,29 +80,31 @@ const getNextMonday = () => {
 }
 
 export const getCountdown = () => {
-  const now: any = new Date();
-  const target: any = getNextMonday();
-  const diffMs = target - now;
+    const now: any = new Date();
+    let target: any = getNextMonday();
 
-  if (diffMs <= 0) {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-  }
+    // If this Monday's 11:00 UTC reset has already passed, roll to next week
+    if (target - now <= 0) {
+        target = new Date(target);
+        target.setUTCDate(target.getUTCDate() + 7);
+    }
+    const diffMs = target - now;
 
-  const totalSeconds = Math.floor(diffMs / 1000);
-  const days = Math.floor(totalSeconds / (60 * 60 * 24));
-  const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
-  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
-  const seconds = totalSeconds % 60;
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const days = Math.floor(totalSeconds / (60 * 60 * 24));
+    const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
+    const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+    const seconds = totalSeconds % 60;
 
-  return { days, hours, minutes, seconds };
+    return { days, hours, minutes, seconds };
 }
 
 export const parseTradeList = (data: RawData, limit?: number): TradeItem[] => {
 const itemMap = new Map<number, TradeItem>();
-  
+
   // Regex to parse the keys: "tradelist_", index, "_", property
   const keyPattern = /^tradelist_(\d+)_(.+)$/;
-  
+
   // Regex to split the item string: captured name, "_stats", captured digits
   // Example: "gutsplitter_stats888" -> "gutsplitter", "888"
   const statsPattern = /^(.*)_stats(\d+)$/;
@@ -113,7 +115,7 @@ const itemMap = new Map<number, TradeItem>();
     if (match) {
       const index = parseInt(match[1], 10);
 
-      // OPTIMIZATION: 
+      // OPTIMIZATION:
       // If a limit is set and this index is equal to or higher, skip it immediately.
       if (limit !== undefined && index >= limit) {
         continue;
@@ -130,7 +132,7 @@ const itemMap = new Map<number, TradeItem>();
       // Special handling for the "item" property
       if (property === 'item') {
         const statsMatch = rawValue.match(statsPattern);
-        
+
         if (statsMatch) {
           // If pattern matches, split into 'item' and 'stat'
           currentItem['item'] = statsMatch[1]; // e.g. "gutsplitter"
