@@ -229,13 +229,13 @@ class Profiler {
       }
 
       const id = getDfProfilerIdByUrl(text)
-      const { data: name, error } = await tryCatch(this.scraper.getProfile(id))
-      if (error){
+      const { data, error } = await tryCatch(this.scraper.getProfile(id))
+      if (error || !data?.name){
         await int.reply("This DFProfiler URL is not valid. Try again.")
         return
       }
 
-      const doc = { user_id: userId, profiler_id: id, name }
+      const doc = { user_id: userId, profiler_id: id, name: data.name }
 
       const insertResponse = await tryCatch(db.updateAsync({ user_id: userId }, doc, { upsert: true }))
       if (insertResponse.error){
@@ -255,14 +255,14 @@ class Profiler {
         userId = setId
       }
 
-      const { data: name, error } = await tryCatch(this.scraper.getProfile(text))
+      const { data, error } = await tryCatch(this.scraper.getProfile(text))
 
-      if (error){
+      if (error || !data?.name){
         await int.reply("This DFProfiler ID is not valid. Try again.")
         return
       }
 
-      const doc = { user_id: userId, profiler_id: text, name }
+      const doc = { user_id: userId, profiler_id: text, name: data.name }
 
       const insertResponse = await tryCatch(db.updateAsync({ user_id: userId }, doc, { upsert: true }))
       if (insertResponse.error){
@@ -500,7 +500,7 @@ class Profiler {
       let selectedUser = null
 
       if (isDigits(name)){
-        selectedUser = await db.findOneAsync({ player_id: name })
+        selectedUser = await db.findOneAsync({ profiler_id: name })
       } else {
         selectedUser = await db.findOneAsync({ name })
       }
