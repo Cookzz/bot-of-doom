@@ -7,8 +7,8 @@ const voteDb = new Datastore({ filename: 'db/votesMain.db', autoload: true })
 export const createVoteCollector = async(messageId: string, expiryDate: string): Promise<void> => {
   const doc: Vote = { message_id: messageId, expiry_date: expiryDate }
 
-  const insertResponse = await tryCatch(voteDb.updateAsync({ message_id: messageId }, doc, { upsert: true }))
-  if (insertResponse.error){
+  const { error } = await tryCatch(voteDb.updateAsync({ message_id: messageId }, doc, { upsert: true }))
+  if (error){
     console.log("There's a problem inserting into DB")
     return
   }
@@ -18,8 +18,8 @@ export const createVoteCollector = async(messageId: string, expiryDate: string):
 }
 
 export const removeVoteCollector = async (messageId: string): Promise<void> => {
-  const insertResponse = await tryCatch(voteDb.removeAsync({ message_id: messageId }, {}))
-  if (insertResponse.error){
+  const { error } = await tryCatch(voteDb.removeAsync({ message_id: messageId }, {}))
+  if (error){
     console.log("There's a problem removing from DB")
     return
   }
@@ -29,12 +29,16 @@ export const removeVoteCollector = async (messageId: string): Promise<void> => {
 }
 
 export const getVoteCollection = async(): Promise<Vote[] | null> => {
-  const voteCollection = await voteDb.findAsync({})
+  const { data, error }: any = await tryCatch(voteDb.findAsync({}))
 
-  if (!voteCollection) {
+  if (error){
+    console.log("There's a problem fetching from DB")
+    return null
+  }
+  if (!data) {
     console.log("No votes exist")
     return null
   }
 
-  return voteCollection
+  return data
 }

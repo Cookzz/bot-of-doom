@@ -58,20 +58,25 @@ class Job {
       }
     }
 
-    /* Send weekly votes before weekly resets */
+    /* Send weekly votes before weekly resets. If the await async fails, just let it be until the next manual trigger */
     async weeklyCtlVoting(){
         const channel = <TextChannel>this.client.channels.cache.get(ANNOUNCEMENT_CHANNEL_ID)
+        const reportChannel = <TextChannel>this.client.channels.cache.get(REPORT_CHANNEL_ID)
 
         const { nextWeek, weekAfterNext } = getUpcomingWeek()
 
-        const message = await channel.send(VOTE_ANNOUNCEMENT_WITH_DATE(nextWeek, weekAfterNext))
+        try {
+          const message = await channel.send(VOTE_ANNOUNCEMENT_WITH_DATE(nextWeek, weekAfterNext))
+          await message.react('✅')
+          await message.react('❌')
 
-        message.react('✅').then(() => message.react('❌'));
+          const expiryDate = new Date(Date.now() + 259200000).toISOString()
 
-        const expiryDate = new Date(Date.now() + 259200000).toISOString()
-
-        createVoteCollector(message.id, expiryDate)
-  }
+          await createVoteCollector(message.id, expiryDate)
+        } catch (error) {
+          await reportChannel.send(`Vote collection failed to trigger, please manually trigger again. Reason: ${JSON.stringify(error)}`)
+        }
+    }
 
   async processVotes(vote: Vote){
       const channel = <TextChannel>this.client.channels.cache.get(ANNOUNCEMENT_CHANNEL_ID)
@@ -100,6 +105,13 @@ class Job {
           users.forEach((v)=>{
               nonParticipants += `${v.username}\n`
           })
+      }
+
+      if (!participants) {
+        participants = "None"
+      }
+      if (nonParticipants) {
+        nonParticipants = "None"
       }
 
       const { nextWeek, weekAfterNext } = getUpcomingWeek()

@@ -20,7 +20,9 @@ class Profiler {
         this.scraper = new Scraper()
     }
 
-    async fetchProfile(int: any, text: any){
+    async fetchProfile(int: any, text: any) {
+        await int.deferReply()
+
         const searchParams = new URLSearchParams()
         const profileName = text.trim().replace(/ /g,"_")
         searchParams.append("dataType", "json")
@@ -45,9 +47,6 @@ class Profiler {
         }
 
         const formattedDate = getDateTime()
-
-        await int.deferReply()
-
         const profileInfo: ProfileInfo | null = await this.scraper.getProfile(data[0].player_id)
 
         if (!profileInfo){
@@ -441,7 +440,6 @@ class Profiler {
         int.reply("There is an issue fetching from DFprofiler, please try again later.")
         return
       }
-      console.log("data", data)
       if (!data || data?.tradelist_maxresults === "0"){
         int.reply("No items found.")
         return
