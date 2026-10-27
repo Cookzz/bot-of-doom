@@ -14,13 +14,13 @@ class Job {
     }
 
     executeJob(){
-        nodeCron.schedule('0 18 * * 4', () => {
+        nodeCron.schedule('0 11 * * 4', () => {
             this.weeklyCtlVoting()
         }, { timezone: 'UTC' });
 
         nodeCron.schedule('*/5 * * * *', () => {
           this.checkVote()
-        }, { timezone: 'UTC' });
+        });
 
         this.weeklyReminder()
 
@@ -48,7 +48,7 @@ class Job {
 
     /* Send announcement when weekly reset is here. Temporarily unused */
     weeklyReminder(){
-        nodeCron.schedule('0 19 * * 1', async () => {
+        nodeCron.schedule('0 11 * * 1', async () => {
             const channel = await this.getChannel(ANNOUNCEMENT_CHANNEL_ID)
             if (!channel) return
 
