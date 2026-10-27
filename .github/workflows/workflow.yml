@@ -1,0 +1,86 @@
+name: Bun Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # manual trigger for building + publishing
+
+jobs:
+  # 1) sanity: install + bundle-check to catch broken imports/types early
+  # (runs on every push; binaries are NOT built or published on push)
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+      # bundles the whole dependency graph without compiling an executable —
+      # fails if anything is missing, unparseable, or unresolvable
+      - run: bun build ./index.ts --target=bun --outdir dist-check
+      - run: rm -rf dist-check
+
+  # 2) build each binary natively on its own platform (required for @napi-rs/canvas)
+  # triggered manually (workflow_dispatch) so pushes to main don't count as releases
+  build:
+    needs: check
+    if: github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            script: build-linux
+            artifact: bodbot-linux-x64
+          - os: ubuntu-24.04-arm
+            script: build-linux-arm
+            artifact: bodbot-linux-arm64
+          - os: windows-latest
+            script: build-windows
+            artifact: bodbot-windows-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+      - run: bun run ${{ matrix.script }} --minify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}*
+
+  # 3) publish binaries as a release, overwriting the previous auto-build
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Short commit id
+        id: sha
+        run: echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true # flatten all three binaries into dist/
+
+      # overwrite: remove the previous auto release + tag, ignoring "not found"
+      - name: Delete previous auto release
+        run: gh release delete "${{ env.RELEASE_TAG }}" --yes --cleanup-tag || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: bot-latest
+        if: always()
+
+      - name: Create release
+        run: >-
+          gh release create "${{ env.RELEASE_TAG }}" dist/*
+          --title "Bot build ${{ steps.sha.outputs.short }} (auto)"
+          --notes "Automated build from commit ${{ steps.sha.outputs.short }}.
+          Binaries: linux-x64, linux-arm64 (natively built so @napi-rs/canvas works), windows-x64."
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: bot-latest
