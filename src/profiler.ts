@@ -1,4 +1,4 @@
-import { EmbedBuilder, MessageFlags, type Client } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, MessageFlags, type Client } from "discord.js";
 import ky from 'ky'
 import { table } from 'table'
 import { formatCurrency, getDateTime, isBlank, paginateArray, tryCatch } from "./utils/common.util";
@@ -7,6 +7,7 @@ import Scraper from "./scraper";
 import type { ProfileInfo } from "./types/profile-info.type.ts";
 import { convertItemListToTableArray, convertToTableArray, getCountdown, getDfProfilerIdByUrl, getOutpost, isDigits, isValidDfProfilerUrl, isValidProfileInput, parseTradeList, stylizeStats } from "./utils/profiler.util";
 import { DFPROFILER } from "./utils/scraper.util";
+import { describeBossmapEvents, formatBossTables, renderBossMap } from "./utils/bossmap.util";
 
 const Datastore = require('@seald-io/nedb')
 const db = new Datastore({ filename: 'db/users.db', autoload: true })
@@ -560,6 +561,35 @@ class Profiler {
       const { days, hours, minutes, seconds } = getCountdown();
 
       int.reply(`Estimated time until reset: ${days}d ${hours}h ${minutes}m ${seconds}s`)
+    }
+
+    async getBossmap(int: any) {
+      await int.deferReply()
+
+      const { data, error } = await tryCatch(this.scraper.getBossmapBundle())
+      if (error || !data){
+        int.editReply("There is an issue fetching the bossmap, please try again later.")
+        return
+      }
+
+      const png = renderBossMap(data)
+
+      const attachment = new AttachmentBuilder(png, { name: 'bossmap.png' })
+
+      const embed = new EmbedBuilder()
+          .setTitle("Bossmap (Active events)")
+          .setColor("#00b0f4")
+          .setFooter({ text: `${getDateTime()} - live data taken from [DFProfiler Boss Map](https://www.dfprofiler.com/bossmap)` })
+          .setImage('attachment://bossmap.png')
+
+      /* summary stays on the embed; the full breakdown goes out as its own message(s) */
+      const chunks = formatBossTables(data)
+
+      await int.editReply({ embeds: [embed], files: [attachment] })
+
+      for (const chunk of chunks) {
+        await int.channel?.send(chunk)
+      }
     }
 }
 

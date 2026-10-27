@@ -161,6 +161,12 @@ const countdown = {
         .setDescription("Get countdown (estimated) for the next weekly reset from the time of this command.")
 }
 
+const bossmap = {
+    ...new SlashCommandBuilder()
+        .setName("bossmap")
+        .setDescription("Show the bossmap (with active events)")
+}
+
 const COMMANDS = [
     profile,
     clanWeekly,
@@ -174,7 +180,8 @@ const COMMANDS = [
     checkSimpleMarket,
     getProfileByName,
     getParticipantVote,
-    countdown
+    countdown,
+    bossmap
 ]
 
 export default COMMANDS;

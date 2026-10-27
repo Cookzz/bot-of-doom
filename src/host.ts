@@ -27,6 +27,7 @@ class Host {
             market: (int: any, text: any) => this.profiler.getMarketPrice(int, text),
             simplemarket: (int: any, text: any) => this.profiler.getMarketPrice(int, text, true),
             reversewho: (int: any, text: any) => this.profiler.getProfileByName(int, text),
+            bossmap: (int: any, text: any) => this.profiler.getBossmap(int),
             compvote: (int: any, text: any) => this.job.weeklyCtlVoting(),
             countdown: (int: any, text: any) => this.profiler.getCompCountdown(int)
         }
@@ -41,11 +42,7 @@ class Host {
             return
         }
 
-        try {
-          await this.commands[command](interaction, text)
-        } catch (err) {
-          await interaction.reply("Something went wrong.")
-        }
+        await this.commands[command](interaction, text)
     }
 }
 

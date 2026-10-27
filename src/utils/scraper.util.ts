@@ -2,7 +2,10 @@ export enum DFPROFILER {
     BASE = "https://www.dfprofiler.com",
     PROFILE_VIEW = "https://www.dfprofiler.com/profile/view",
     CLAN_WEEKLY = "https://www.dfprofiler.com/clan/weekly-loot",
-    CLAN = "https://www.dfprofiler.com/clan/view/168"
+    CLAN = "https://www.dfprofiler.com/clan/view/168",
+    BOSSMAP = "https://www.dfprofiler.com/bossmap",
+    BOSSMAP_JSON = "https://www.dfprofiler.com/bossmap/json/",
+    BOSSMAP_CSS = "https://www.dfprofiler.com/css/bosstable.css"
 }
 
 export enum SCRAPE {

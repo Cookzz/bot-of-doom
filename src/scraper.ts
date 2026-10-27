@@ -1,8 +1,10 @@
 import ky from 'ky'
 import * as cheerio from 'cheerio';
-import { DFPROFILER, getTableInfo, SCRAPE } from "./utils/scraper.util";
-import { isBlank, mapLimit, tryCatch } from "./utils/common.util";
+import { tryCatch } from "./utils/common.util";
 import { API } from "./utils/api.util";
+import { DFPROFILER, getTableInfo, SCRAPE } from "./utils/scraper.util";
+import { parseTerritoryCss } from "./utils/bossmap.util";
+import type { BossCell, BossEvent, BossLetter, BossmapBundle } from "./types/bossmap.type";
 
 class Scraper {
     async getProfile(id: any): Promise<any>{
@@ -180,6 +182,65 @@ class Scraper {
         const sortedInfo = membersInfo.filter(m => Number(m.loot_weekly) !== 0).sort((a, b) => Number(b.loot_weekly) - Number(a.loot_weekly))
 
         return sortedInfo
+    }
+
+    /*
+      /bossmap only renders markers client-side from /bossmap/json, so the
+      static page is used solely for the grid outline and the outpost letters
+    */
+    async getBossmapBundle(): Promise<BossmapBundle> {
+        const [mapEl, mapJ, mapCss] = [DFPROFILER.BOSSMAP, DFPROFILER.BOSSMAP_JSON, DFPROFILER.BOSSMAP_CSS]
+
+        const { data: mapData, error: mapError } = await tryCatch(ky.get(mapEl, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        }).text())
+        if (mapError) throw mapError
+
+        const { data: eventsData, error: eventsError } = await tryCatch(ky.get(mapJ, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        }).json<Record<string, any>>())
+        if (eventsError) throw eventsError
+
+        const { data: cssData, error: cssError } = await tryCatch(ky.get(mapCss).text())
+        if (cssError) throw cssError
+
+        const $ = cheerio.load(mapData)
+        const cell_matches = $('td.coord').map((_, el) => {
+            const cls = $(el).attr('class') ?? ''
+            return { cls, text: $(el).text().trim(), title: $(el).attr('data-title') ?? '' }
+        }).get()
+
+        const cells: BossCell[] = []
+        const letters: BossLetter[] = []
+        for (const { cls, text, title } of cell_matches) {
+            const match = cls.match(/x(\d+) y(\d+)/)
+            if (!match) continue
+            const x = Number(match[1]), y = Number(match[2])
+            cells.push({ x, y })
+            if (text) {
+                letters.push({ x, y, letter: text, title })
+            }
+        }
+
+        const xs = cells.map(c => c.x)
+        const ys = cells.map(c => c.y)
+
+        // the payload also carries version/bosshash/servertime; everything else is events
+        const events: BossEvent[] = Object.entries(eventsData)
+            .filter(([key]) => !['version', 'bosshash', 'servertime'].includes(key))
+            .map(([, value]) => value as BossEvent)
+        const servertime = Number(eventsData.servertime)
+        const outpostsAttacked = Object.entries(eventsData).some(([, value]) => (value as BossEvent)?.isoa === '1')
+
+        return {
+            bounds: { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) },
+            cells,
+            letters,
+            terrains: parseTerritoryCss(cssData),
+            events,
+            servertime,
+            outpostsAttacked,
+        }
     }
 }
 
