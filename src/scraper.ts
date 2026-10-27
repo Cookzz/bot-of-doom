@@ -191,18 +191,21 @@ class Scraper {
     async getBossmapBundle(): Promise<BossmapBundle> {
         const [mapEl, mapJ, mapCss] = [DFPROFILER.BOSSMAP, DFPROFILER.BOSSMAP_JSON, DFPROFILER.BOSSMAP_CSS]
 
-        const { data: mapData, error: mapError } = await tryCatch(ky.get(mapEl, {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        }).text())
-        if (mapError) throw mapError
+        // concurrently fetch instead of doing it one by one
+        const dfpHeaders = { "X-Requested-With": "XMLHttpRequest" }
+        const [mapRes, eventsRes, cssRes] = await Promise.allSettled([
+            ky.get(mapEl, { headers: dfpHeaders }).text(),
+            ky.get(mapJ, { headers: dfpHeaders }).json<Record<string, any>>(),
+            ky.get(mapCss).text(),
+        ])
 
-        const { data: eventsData, error: eventsError } = await tryCatch(ky.get(mapJ, {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        }).json<Record<string, any>>())
-        if (eventsError) throw eventsError
+        if (mapRes.status === 'rejected') throw mapRes.reason
+        if (eventsRes.status === 'rejected') throw eventsRes.reason
+        if (cssRes.status === 'rejected') throw cssRes.reason
 
-        const { data: cssData, error: cssError } = await tryCatch(ky.get(mapCss).text())
-        if (cssError) throw cssError
+        const mapData = mapRes.value
+        const eventsData = eventsRes.value
+        const cssData = cssRes.value
 
         const $ = cheerio.load(mapData)
         const cell_matches = $('td.coord').map((_, el) => {
