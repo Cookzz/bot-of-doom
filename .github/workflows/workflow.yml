@@ -58,9 +58,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6 # gh release needs a git repo to run in
+
       - name: Short commit id
         id: sha
-        run: echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/download-artifact@v8
         with:
