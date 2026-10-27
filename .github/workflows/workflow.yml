@@ -1,10 +1,13 @@
-name: Bun Build
+name: Publish Build
 
 on:
   push:
     branches:
       - main
   workflow_dispatch: # manual trigger for building + publishing
+
+permissions:
+  contents: write # GITHUB_TOKEN must be able to delete/create the release
 
 jobs:
   # 1) sanity: install + bundle-check to catch broken imports/types early
