@@ -3,7 +3,7 @@ import { getDateTime, isBlank, paginateArray, tryCatch } from "./utils/common.ut
 import { isDigits } from "./utils/profiler.util";
 import type { Challenge } from "./types/challenge.type";
 import type { ChallengeArchive } from "./types/challenge-archive.type";
-import { parseChallenges } from "./utils/challenge.util";
+import { getChallengeStatus, parseChallenges } from "./utils/challenge.util";
 import { getChallengeArchive, getChallenges, setChallengeClaim, setChallenges } from "./utils/db.util";
 
 /*
@@ -41,7 +41,7 @@ class Local {
         const formattedDate = getDateTime()
 
         const challengeList = challenges.map(challenge => {
-            return `• **${challenge.name}** — ends ${challenge.ends} ${challenge.complete ? "✅" : "⏳"}`
+            return `• **${challenge.name}** — ${getChallengeStatus(challenge)} — ends ${challenge.ends}`
         }).join("\n")
 
         const embed = new EmbedBuilder()
@@ -112,7 +112,7 @@ class Local {
                 const index = (chunkIndex * chunkSize) + i
                 embed.addFields({
                     name: `${index + 1}. ${challenge.name}`,
-                    value: `${challenge.complete ? "✅ Completed" : "⏳ In Progress"} • Ends: ${challenge.ends} • Completed by: ${challenge.completed_by ? `<@${challenge.completed_by}>` : "—"}`
+                    value: `${getChallengeStatus(challenge)} • Ends: ${challenge.ends} • Completed by: ${challenge.completed_by ? `<@${challenge.completed_by}>` : "—"}`
                 })
             }
 
@@ -217,7 +217,7 @@ class Local {
 
         const embeds = records.map((record: ChallengeArchive) => {
             const recordList = record.challenges.map((challenge: Challenge) => {
-                return `• **${challenge.name}** — ${challenge.complete ? "✅" : "⏳"} — ends ${challenge.ends} — completed by: ${challenge.completed_by ? `<@${challenge.completed_by}>` : "—"}`
+                return `• **${challenge.name}** — ${getChallengeStatus(challenge)} — ends ${challenge.ends} — completed by: ${challenge.completed_by ? `<@${challenge.completed_by}>` : "—"}`
             }).join("\n")
 
             return new EmbedBuilder()

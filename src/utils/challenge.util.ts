@@ -114,3 +114,9 @@ export const getWeekStartDate = (deadline: Date): Date => {
 
     return start
 }
+
+/* status is determined by whoever claimed the completion, not the clan-wide
+flag from the website paste */
+export const getChallengeStatus = (challenge: Challenge): string => {
+    return challenge.completed_by ? "✅ Completed" : "⏳ In Progress"
+}
