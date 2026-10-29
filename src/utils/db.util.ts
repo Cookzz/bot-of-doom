@@ -85,7 +85,8 @@ export const setChallenges = async(challenges: Challenge[]): Promise<{ saved: bo
           name: doc.name,
           ends: doc.ends,
           complete: doc.complete,
-          completed_by: doc.completed_by ?? null
+          completed_by: doc.completed_by ?? null,
+          completed_on: doc.completed_on ?? null
         }))
       }
 
@@ -124,9 +125,14 @@ export const setChallenges = async(challenges: Challenge[]): Promise<{ saved: bo
 }
 
 /* index is the 0-based position of the challenge in the stored list.
-Passing userId=null removes an existing claim */
+Passing userId=null removes an existing claim; the completion is stamped
+with the time it was marked and cleared again on unclaim */
 export const setChallengeClaim = async(index: number, userId: string | null): Promise<boolean> => {
-  const { error } = await tryCatch(challengesDb.updateAsync({ position: index }, { $set: { completed_by: userId } }, {}))
+  const doc = userId !== null
+    ? { completed_by: userId, completed_on: getDateTime() }
+    : { completed_by: null, completed_on: null }
+
+  const { error } = await tryCatch(challengesDb.updateAsync({ position: index }, { $set: doc }, {}))
   if (error){
     console.log("There's a problem claiming the challenge in DB")
     return false

@@ -120,3 +120,15 @@ flag from the website paste */
 export const getChallengeStatus = (challenge: Challenge): string => {
     return challenge.completed_by ? "✅ Completed" : "⏳ In Progress"
 }
+
+/* the credit line shown in embeds; the completion timestamp is tagged on
+next to the claimer when the challenge was marked as complete */
+export const getCompletedByLabel = (challenge: Challenge): string => {
+    if (!challenge.completed_by){
+        return "—"
+    }
+
+    return challenge.completed_on
+        ? `<@${challenge.completed_by}> (Completed: ${challenge.completed_on})`
+        : `<@${challenge.completed_by}>`
+}
