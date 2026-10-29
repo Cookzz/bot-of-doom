@@ -19,7 +19,7 @@ class Job {
         }, { timezone: 'UTC' });
 
         nodeCron.schedule('*/5 * * * *', () => {
-          this.checkVote()
+            this.checkVote()
         });
 
         this.weeklyReminder()
@@ -28,8 +28,17 @@ class Job {
         // this.weeklyCtlVoting()
     }
 
-    /* Resolve a text channel by id, properly fetching it from the API
-       instead of trusting the (possibly empty) cache */
+    /* Send announcement when weekly reset is here. Temporarily unused */
+    weeklyReminder(){
+        nodeCron.schedule('0 11 * * 1', async () => {
+            const channel = await this.getChannel(ANNOUNCEMENT_CHANNEL_ID)
+            if (!channel) return
+
+            await channel.send("@everyone Weekly reset is here - 11am UTC, 7pm GMT+8")
+        }, { timezone: 'UTC' });
+    }
+
+    /* Fetch channel from cache */
     private async getChannel(channelId: string): Promise<TextChannel | null> {
         const { data, error } = await tryCatch(this.client.channels.fetch(channelId))
 
@@ -44,16 +53,6 @@ class Job {
         }
 
         return data
-    }
-
-    /* Send announcement when weekly reset is here. Temporarily unused */
-    weeklyReminder(){
-        nodeCron.schedule('0 11 * * 1', async () => {
-            const channel = await this.getChannel(ANNOUNCEMENT_CHANNEL_ID)
-            if (!channel) return
-
-            await channel.send("@everyone Weekly reset is here - 11am UTC, 7pm GMT+8")
-        }, { timezone: 'UTC' });
     }
 
     async checkVote() {
