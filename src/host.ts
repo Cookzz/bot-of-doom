@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, Client, type CacheType } from 'discord.js';
 import { validateInput } from './utils/host.util';
 import Profiler from './profiler';
+import Local from './local';
 import Job from './job'
 import type { Commands } from './types/command.type';
 
@@ -8,11 +9,13 @@ class Host {
     private readonly client: Client
     private readonly commands: Commands
     private readonly profiler: Profiler
+    private readonly local: Local
     private readonly job: Job
 
     constructor(client: Client) {
         this.client = client
         this.profiler = new Profiler(client)
+        this.local = new Local()
         this.job = new Job(client)
 
         this.commands = {
@@ -29,7 +32,11 @@ class Host {
             reversewho: (int: any, text: any) => this.profiler.getProfileByName(int, text),
             bossmap: (int: any, text: any) => this.profiler.getBossmap(int),
             compvote: (int: any, text: any) => this.job.weeklyCtlVoting(),
-            countdown: (int: any, text: any) => this.profiler.getCompCountdown(int)
+            countdown: (int: any, text: any) => this.profiler.getCompCountdown(int),
+            addchallenge: (int: any, text: any) => this.local.addChallenges(int, text),
+            challengelist: (int: any, text: any) => this.local.getChallengeList(int),
+            completechallenge: (int: any, text: any) => this.local.completeChallenge(int, text),
+            oldchallenge: (int: any, text: any) => this.local.getChallengeArchiveList(int, text)
         }
     }
 

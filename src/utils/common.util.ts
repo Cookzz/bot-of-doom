@@ -24,9 +24,23 @@ export const isBlank = (str: string) => {
     return (!str || str.length === 0 || str.trim() === "")
 }
 
-export const getDateTime = () => {
-    const date = new Date();
-    const formatter = new Intl.DateTimeFormat('en-US', {
+export const getDateTime = (date?: Date, dateOnly?: boolean) => {
+    let newDate = new Date();
+    if (date) {
+      newDate = new Date(date)
+    }
+
+    if (dateOnly) {
+      const formatter = new Intl.DateTimeFormat('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          timeZone: 'UTC'
+      });
+      return formatter.format(newDate);
+    }
+
+    const formatter = new Intl.DateTimeFormat('en-GB', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -35,7 +49,7 @@ export const getDateTime = () => {
         hour12: true, // Use 12-hour format
         timeZone: 'UTC'
     });
-    return formatter.format(date);
+    return formatter.format(newDate);
 }
 
 export const getUpcomingWeek = () => {

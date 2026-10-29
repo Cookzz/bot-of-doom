@@ -167,6 +167,50 @@ const bossmap = {
         .setDescription("Show the bossmap (with active events)")
 }
 
+const addChallenge = {
+    ...new SlashCommandBuilder()
+        .setName("addchallenge")
+        .setDescription("Compile clan challenges from pasted text (admin)")
+        .addStringOption(option =>
+            option
+                .setName("text")
+                .setDescription("Paste the text copied from the clan challenge page")
+                .setRequired(true)
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+}
+
+const checkChallenge = {
+    ...new SlashCommandBuilder()
+        .setName("challengelist")
+        .setDescription("Show the compiled clan challenges (name, status, deadline, completed by) if any")
+}
+
+const completeChallenge = {
+    ...new SlashCommandBuilder()
+        .setName("completechallenge")
+        .setDescription("Mark a challenge as complete by its number from /checkchallenge (toggles your own)")
+        .addNumberOption(option =>
+            option
+                .setName("number")
+                .setDescription("challenge number from the /checkchallenge list")
+                .setRequired(true)
+        )
+}
+
+const oldChallenge = {
+    ...new SlashCommandBuilder()
+        .setName("oldchallenge")
+        .setDescription("Review past weeks' challenge records")
+        .addNumberOption(option =>
+            option
+                .setName("number")
+                .setDescription("page (defaults to 1 if none)")
+                .setRequired(false)
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+}
+
 const COMMANDS = [
     profile,
     clanWeekly,
@@ -181,7 +225,11 @@ const COMMANDS = [
     getProfileByName,
     getParticipantVote,
     countdown,
-    bossmap
+    bossmap,
+    addChallenge,
+    checkChallenge,
+    completeChallenge,
+    oldChallenge
 ]
 
 export default COMMANDS;
