@@ -183,7 +183,7 @@ const addChallenge = {
 const checkChallenge = {
     ...new SlashCommandBuilder()
         .setName("challengelist")
-        .setDescription("Show the compiled clan challenges (name, status, deadline, completed by) if any")
+        .setDescription("Show clan challenges for the week (name, status, deadline, completed by) if any")
 }
 
 const completeChallenge = {
