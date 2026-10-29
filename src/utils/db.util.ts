@@ -1,6 +1,6 @@
 import type { ChallengeArchive } from "../types/challenge-archive.type";
 import type { Challenge } from "../types/challenge.type";
-import type { Vote, Voter } from "../types/vote-collection.type";
+import type { Vote } from "../types/vote-collection.type";
 import { getDateTime, tryCatch } from "./common.util";
 import { getLatestDeadline, getWeekStartDate } from "./challenge.util";
 
