@@ -63,9 +63,7 @@ export const parseChallenges = (text: string): { challenges: Challenge[], unmatc
     return { challenges, unmatched }
 }
 
-/* turns a website deadline like "02/11/2026 08:05" into a real Date.
-website dates are DD/MM/YYYY (e.g. 02/11 = 2 November), evaluated in UTC
-so it lines up with the rest of the bot's date handling */
+// converts deadline date to UTC
 export const parseDeadlineDate = (ends: string): Date | null => {
     const match = ends.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/)
     if (!match){
@@ -115,14 +113,12 @@ export const getWeekStartDate = (deadline: Date): Date => {
     return start
 }
 
-/* status is determined by whoever claimed the completion, not the clan-wide
-flag from the website paste */
+// we show in progress if no one completes it. show as completed if someone assigns themself to have completed it
 export const getChallengeStatus = (challenge: Challenge): string => {
     return challenge.completed_by ? "✅ Completed" : "⏳ In Progress"
 }
 
-/* the credit line shown in embeds; the completion timestamp is tagged on
-next to the claimer when the challenge was marked as complete */
+// show none if no one completes it, add name & timestamp when completed
 export const getCompletedByLabel = (challenge: Challenge): string => {
     if (!challenge.completed_by){
         return "—"

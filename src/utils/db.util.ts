@@ -48,10 +48,12 @@ export const getVoteCollection = async(): Promise<Vote[] | null> => {
   return data
 }
 
-/* Replace-all semantics: every call makes the passed in list the current one.
-If the current list's deadline has already passed, it is archived first so
-past weeks stay reviewable with /oldchallenge, then the new list is saved.
-An expired list is never wiped unless its archive copy is safely stored */
+/*
+  By default, we add challenges from the provided text from user.
+  We allow overrides if a new list is provided before the deadline.
+  Archives are only done when we set new challenges AFTER the deadline.
+  This way in case of mistakes (like adding incomplete list of challenges or copied wrong set), we have the chance to fix it
+*/
 export const setChallenges = async(challenges: Challenge[]): Promise<{ saved: boolean, archived: boolean }> => {
   const { data: previous, error: fetchError }: any = await tryCatch(challengesDb.findAsync({}).sort({ position: 1 }).execAsync())
 
@@ -124,9 +126,7 @@ export const setChallenges = async(challenges: Challenge[]): Promise<{ saved: bo
   return { saved: true, archived: archived }
 }
 
-/* index is the 0-based position of the challenge in the stored list.
-Passing userId=null removes an existing claim; the completion is stamped
-with the time it was marked and cleared again on unclaim */
+// handles the challenge toggles and timestamping
 export const setChallengeClaim = async(index: number, userId: string | null): Promise<boolean> => {
   const doc = userId !== null
     ? { completed_by: userId, completed_on: getDateTime() }
@@ -156,7 +156,7 @@ export const getChallenges = async(): Promise<Challenge[] | null> => {
   return data
 }
 
-/* past weeks' challenges, newest week first */
+// past weeks' challenges, newest week first
 export const getChallengeArchive = async(): Promise<ChallengeArchive[] | null> => {
   const { data, error }: any = await tryCatch(challengesArchiveDb.findAsync({}).sort({ week: -1 }).execAsync())
 
