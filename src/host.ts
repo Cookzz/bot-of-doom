@@ -31,7 +31,7 @@ class Host {
             simplemarket: (int: any, text: any) => this.profiler.getMarketPrice(int, text, true),
             reversewho: (int: any, text: any) => this.profiler.getProfileByName(int, text),
             bossmap: (int: any, text: any) => this.profiler.getBossmap(int),
-            compvote: (int: any, text: any) => this.job.weeklyCtlVoting(),
+            compvote: (int: any, text: any) => this.job.weeklyCtlVoting(int),
             countdown: (int: any, text: any) => this.profiler.getCompCountdown(int),
             addchallenge: (int: any, text: any) => this.local.addChallenges(int, text),
             challengelist: (int: any, text: any) => this.local.getChallengeList(int),

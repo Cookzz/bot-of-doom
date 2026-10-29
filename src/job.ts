@@ -1,4 +1,4 @@
-import { EmbedBuilder, TextChannel, User, type Client } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, MessageFlags, TextChannel, User, type CacheType, type Client } from "discord.js";
 import nodeCron from "node-cron";
 import { ANNOUNCEMENT_CHANNEL_ID, REPORT_CHANNEL_ID, VOTE_ANNOUNCEMENT_WITH_DATE } from "./constant";
 import { getUpcomingWeek, tryCatch } from "./utils/common.util";
@@ -78,7 +78,7 @@ class Job {
     }
 
     /* Send weekly votes before weekly resets. If the await async fails, just let it be until the next manual trigger */
-    async weeklyCtlVoting(){
+    async weeklyCtlVoting(int?: ChatInputCommandInteraction<CacheType>){
         const channel = <TextChannel>this.client.channels.cache.get(ANNOUNCEMENT_CHANNEL_ID)
         const reportChannel = <TextChannel>this.client.channels.cache.get(REPORT_CHANNEL_ID)
 
@@ -93,6 +93,9 @@ class Job {
         const { error } = await tryCatch(createVoteCollector(message.id, expiryDate))
         if (error) {
             await reportChannel.send(`Vote collection failed to trigger, please manually trigger again. Reason: ${error}`)
+        }
+        if (int) {
+          await int.reply({ content: "Announcement sent. ", flags: MessageFlags.Ephemeral })
         }
     }
 
