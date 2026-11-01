@@ -130,7 +130,7 @@ class Job {
       if (!participants) {
         participants = "None"
       }
-      if (nonParticipants) {
+      if (!nonParticipants) {
         nonParticipants = "None"
       }
 
