@@ -6,8 +6,7 @@ import { API } from "./utils/api.util";
 import Scraper from "./scraper";
 import type { ProfileInfo } from "./types/profile-info.type.ts";
 import { convertItemListToTableArray, convertToTableArray, getCountdown, getDfProfilerIdByUrl, getOutpost, isDigits, isValidDfProfilerUrl, isValidProfileInput, parseTradeList, stylizeStats } from "./utils/profiler.util";
-import { DFPROFILER } from "./utils/scraper.util";
-import { describeBossmapEvents, formatBossTables, renderBossMap } from "./utils/bossmap.util";
+import { formatBossTables, renderBossMap } from "./utils/bossmap.util";
 
 const Datastore = require('@seald-io/nedb')
 const db = new Datastore({ filename: 'db/users.db', autoload: true })
@@ -410,7 +409,7 @@ class Profiler {
         await int.reply("Item or outpost name cannot be blank")
         return;
       }
-      if (getOutpost(outpostId)) {
+      if (!getOutpost(outpostId)) {
         await int.reply("Invalid outpost")
         return;
       }
